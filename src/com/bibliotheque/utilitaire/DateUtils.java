@@ -5,8 +5,8 @@ import java.time.temporal.ChronoUnit;
 
 public class DateUtils {
     public static boolean estDateValide(LocalDate date){
-        // Valider la date si besoin
-        return true; // placeholder
+
+        return true;
     }
     public static LocalDate obtenirDateActuelle(){
         return LocalDate.now();
