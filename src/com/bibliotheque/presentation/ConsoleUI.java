@@ -1,10 +1,13 @@
 package com.bibliotheque.presentation;
 
+import com.bibliotheque.dao.DatabaseConnection;
 import com.bibliotheque.metier.Bibliotheque;
 import com.bibliotheque.metier.Document;
 import com.bibliotheque.metier.Livre;
 import com.bibliotheque.metier.Magazine;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -205,7 +208,21 @@ public class ConsoleUI {
     }
 
     public static void main(String[] args) {
-        ConsoleUI ui = new ConsoleUI();
-        ui.afficherMenu();
+        try {
+            // Check the database connection
+            Connection cnx = DatabaseConnection.getConnection();
+            if (cnx != null) {
+                System.out.println("Connexion à la base de données établie avec succès !");
+            } else {
+                System.out.println("Échec de la connexion à la base de données.");
+                return;  // Exit if no connection
+            }
+
+            // Run the application UI if the connection is successful
+            ConsoleUI ui = new ConsoleUI();
+            ui.afficherMenu();
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la connexion à la base de données : " + e.getMessage());
+        }
     }
 }
