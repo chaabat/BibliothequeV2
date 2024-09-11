@@ -20,17 +20,53 @@ public class ConsoleUI {
     public void afficherMenuPrincipal() {
         while (true) {
             System.out.println("\n=== Menu Principal ===");
+            System.out.println("1. Gestion des documents");
+            System.out.println("2. Gestion des utilisateurs");
+            System.out.println("3. Gestion des emprunts");
+            System.out.println("4. Gestion des réservations");
+            System.out.println("5. Afficher tous les documents");
+            System.out.println("6. Afficher tous les utilisateurs");
+            System.out.println("7. Quitter");
+            System.out.print("Choisissez une option : ");
+
+            int choix = scanner.nextInt();
+            scanner.nextLine(); // Consommer la nouvelle ligne
+
+            switch (choix) {
+                case 1:
+                    afficherMenuDocuments();
+                    break;
+                case 2:
+                    afficherMenuUtilisateurs();
+                    break;
+                case 3:
+                    afficherMenuEmprunts();
+                    break;
+                case 4:
+                    afficherMenuReservations();
+                    break;
+                case 5:
+                    bibliotheque.afficherDocuments();
+                    break;
+                case 6:
+                    bibliotheque.afficherUtilisateurs();
+                    break;
+                case 7:
+                    System.out.println("Au revoir !");
+                    return;
+                default:
+                    System.out.println("Choix invalide, veuillez réessayer.");
+            }
+        }
+    }
+
+    private void afficherMenuDocuments() {
+        while (true) {
+            System.out.println("\n=== Gestion des Documents ===");
             System.out.println("1. Ajouter un document");
             System.out.println("2. Modifier un document");
             System.out.println("3. Supprimer un document");
-            System.out.println("4. Ajouter un utilisateur");
-            System.out.println("5. Emprunter un document");
-            System.out.println("6. Retourner un document");
-            System.out.println("7. Réserver un document");
-            System.out.println("8. Annuler la réservation d'un document");
-            System.out.println("9. Afficher tous les documents");
-            System.out.println("10. Afficher tous les utilisateurs");
-            System.out.println("11. Quitter");
+            System.out.println("4. Retour au menu principal");
             System.out.print("Choisissez une option : ");
 
             int choix = scanner.nextInt();
@@ -47,28 +83,6 @@ public class ConsoleUI {
                     supprimerDocument();
                     break;
                 case 4:
-                    ajouterUtilisateur();
-                    break;
-                case 5:
-                    emprunterDocument();
-                    break;
-                case 6:
-                    retournerDocument();
-                    break;
-                case 7:
-                    reserverDocument();
-                    break;
-                case 8:
-                    annulerReservation();
-                    break;
-                case 9:
-                    bibliotheque.afficherDocuments();
-                    break;
-                case 10:
-                    bibliotheque.afficherUtilisateurs();
-                    break;
-                case 11:
-                    System.out.println("Au revoir !");
                     return;
                 default:
                     System.out.println("Choix invalide, veuillez réessayer.");
@@ -76,7 +90,84 @@ public class ConsoleUI {
         }
     }
 
-    private void ajouterDocument() {
+    private void afficherMenuUtilisateurs() {
+        while (true) {
+            System.out.println("\n=== Gestion des Utilisateurs ===");
+            System.out.println("1. Ajouter un utilisateur");
+            System.out.println("2. Retour au menu principal");
+            System.out.print("Choisissez une option : ");
+
+            int choix = scanner.nextInt();
+            scanner.nextLine(); // Consommer la nouvelle ligne
+
+            switch (choix) {
+                case 1:
+                    ajouterUtilisateur();
+                    break;
+                case 2:
+                    return;
+                default:
+                    System.out.println("Choix invalide, veuillez réessayer.");
+            }
+        }
+    }
+
+    private void afficherMenuEmprunts() {
+        while (true) {
+            System.out.println("\n=== Gestion des Emprunts ===");
+            System.out.println("1. Emprunter un document");
+            System.out.println("2. Retourner un document");
+            System.out.println("3. Retour au menu principal");
+            System.out.print("Choisissez une option : ");
+
+            int choix = scanner.nextInt();
+            scanner.nextLine(); // Consommer la nouvelle ligne
+
+            switch (choix) {
+                case 1:
+                    emprunterDocument();
+                    break;
+                case 2:
+                    retournerDocument();
+                    break;
+                case 3:
+                    return;
+                default:
+                    System.out.println("Choix invalide, veuillez réessayer.");
+            }
+        }
+    }
+
+    private void afficherMenuReservations() {
+        while (true) {
+            System.out.println("\n=== Gestion des Réservations ===");
+            System.out.println("1. Réserver un document");
+            System.out.println("2. Annuler la réservation d'un document");
+            System.out.println("3. Retour au menu principal");
+            System.out.print("Choisissez une option : ");
+
+            int choix = scanner.nextInt();
+            scanner.nextLine(); // Consommer la nouvelle ligne
+
+            switch (choix) {
+                case 1:
+                    reserverDocument();
+                    break;
+                case 2:
+                    annulerReservation();
+                    break;
+                case 3:
+                    return;
+                default:
+                    System.out.println("Choix invalide, veuillez réessayer.");
+            }
+        }
+    }
+
+
+
+
+private void ajouterDocument() {
         System.out.println("\n=== Ajouter un Document ===");
         System.out.print("Titre du document : ");
         String titre = scanner.nextLine();
