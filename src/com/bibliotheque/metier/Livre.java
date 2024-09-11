@@ -9,6 +9,7 @@ public class Livre extends Document {
         super(id, titre, auteur, datePublication, nombreDePages);
     }
 
+
     @Override
     public String getType() {
         return "Livre";

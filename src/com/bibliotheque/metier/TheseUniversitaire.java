@@ -8,7 +8,6 @@ public class TheseUniversitaire extends Document {
     private String domaineEtude;
     private int anneeSoumission;
 
-    // Constructor
     public TheseUniversitaire(UUID id, String titre, String auteur, LocalDate datePublication, int nombreDePages, String universite, String domaineEtude, int anneeSoumission) {
         super(id, titre, auteur, datePublication, nombreDePages);
         this.universite = universite;
@@ -16,12 +15,6 @@ public class TheseUniversitaire extends Document {
         this.anneeSoumission = anneeSoumission;
     }
 
-
-
-
-    public TheseUniversitaire(UUID id, String titre, String auteur, LocalDate datePublication, int nombreDePages) {
-        super(id, titre, auteur, datePublication, nombreDePages);
-    }
 
     @Override
     public String getType() {

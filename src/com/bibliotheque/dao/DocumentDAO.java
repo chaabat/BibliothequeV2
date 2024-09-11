@@ -19,6 +19,7 @@ public class DocumentDAO implements DocumentDAOInterface {
     public DocumentDAO() {
         try {
             this.connection = DatabaseConnection.getConnection();
+            this.connection.setAutoCommit(false); // Disable auto-commit to manage transactions manually
         } catch (SQLException e) {
             e.printStackTrace(); // Consider using a logger
         }
@@ -26,7 +27,7 @@ public class DocumentDAO implements DocumentDAOInterface {
 
     @Override
     public void ajouterDocument(Document document) {
-        String sql = "INSERT INTO documents (id, title, author, releaseDate, pages, type, borrowedBy, reservedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO documents (id, titre, auteur, datePublication, nombrePages, type, empruntePar, reservePar, universite, domaineEtude, anneeSoumission) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setObject(1, document.getId());
@@ -38,9 +39,26 @@ public class DocumentDAO implements DocumentDAOInterface {
             pstmt.setObject(7, document.getEmpruntePar() != null ? document.getEmpruntePar() : null);
             pstmt.setObject(8, document.getReservePar() != null ? document.getReservePar() : null);
 
+            if (document instanceof TheseUniversitaire) {
+                TheseUniversitaire these = (TheseUniversitaire) document;
+                pstmt.setString(9, these.getUniversite());
+                pstmt.setString(10, these.getDomaineEtude());
+                pstmt.setInt(11, these.getAnneeSoumission());
+            } else {
+                pstmt.setNull(9, Types.VARCHAR);
+                pstmt.setNull(10, Types.VARCHAR);
+                pstmt.setNull(11, Types.INTEGER);
+            }
+
             pstmt.executeUpdate();
+            connection.commit(); // Commit the transaction
             System.out.println("Document ajouté avec succès.");
         } catch (SQLException e) {
+            try {
+                connection.rollback(); // Rollback the transaction on error
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace(); // Consider using a logger
+            }
             e.printStackTrace(); // Consider using a logger
         }
     }
@@ -55,12 +73,12 @@ public class DocumentDAO implements DocumentDAOInterface {
 
             while (rs.next()) {
                 UUID id = (UUID) rs.getObject("id");
-                String title = rs.getString("title");
-                String author = rs.getString("author");
-                Date releaseDate = rs.getDate("releaseDate");
-                int pages = rs.getInt("pages");
-                UUID borrowedBy = rs.getObject("borrowedBy") != null ? (UUID) rs.getObject("borrowedBy") : null;
-                UUID reservedBy = rs.getObject("reservedBy") != null ? (UUID) rs.getObject("reservedBy") : null;
+                String title = rs.getString("titre");
+                String author = rs.getString("auteur");
+                Date releaseDate = rs.getDate("datePublication");
+                int pages = rs.getInt("nombrePages");
+                UUID borrowedBy = rs.getObject("empruntePar") != null ? (UUID) rs.getObject("empruntePar") : null;
+                UUID reservedBy = rs.getObject("reservePar") != null ? (UUID) rs.getObject("reservePar") : null;
                 String type = rs.getString("type");
 
                 Document document = null;
@@ -76,7 +94,10 @@ public class DocumentDAO implements DocumentDAOInterface {
                         document = new JournalScientifique(id, title, author, releaseDate.toLocalDate(), pages);
                         break;
                     case "TheseUniversitaire":
-                        document = new TheseUniversitaire(id, title, author, releaseDate.toLocalDate(), pages);
+                        String universite = rs.getString("universite");
+                        String domaineEtude = rs.getString("domaineEtude");
+                        int anneeSoumission = rs.getInt("anneeSoumission");
+                        document = new TheseUniversitaire(id, title, author, releaseDate.toLocalDate(), pages, universite, domaineEtude, anneeSoumission);
                         break;
                 }
 
@@ -95,7 +116,7 @@ public class DocumentDAO implements DocumentDAOInterface {
 
     @Override
     public void mettreAJourDocument(Document document) {
-        String sql = "UPDATE documents SET title = ?, author = ?, releaseDate = ?, pages = ?, borrowedBy = ?, reservedBy = ? WHERE id = ?";
+        String sql = "UPDATE documents SET titre = ?, auteur = ?, datePublication = ?, nombrePages = ?, empruntePar = ?, reservePar = ? WHERE id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, document.getTitre());
@@ -107,8 +128,14 @@ public class DocumentDAO implements DocumentDAOInterface {
             pstmt.setObject(7, document.getId());
 
             pstmt.executeUpdate();
+            connection.commit(); // Commit the transaction
             System.out.println("Document mis à jour avec succès.");
         } catch (SQLException e) {
+            try {
+                connection.rollback(); // Rollback the transaction on error
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace(); // Consider using a logger
+            }
             e.printStackTrace(); // Consider using a logger
         }
     }
@@ -120,8 +147,14 @@ public class DocumentDAO implements DocumentDAOInterface {
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setObject(1, id);
             pstmt.executeUpdate();
+            connection.commit(); // Commit the transaction
             System.out.println("Document supprimé avec succès.");
         } catch (SQLException e) {
+            try {
+                connection.rollback(); // Rollback the transaction on error
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace(); // Consider using a logger
+            }
             e.printStackTrace(); // Consider using a logger
         }
     }
@@ -136,12 +169,12 @@ public class DocumentDAO implements DocumentDAOInterface {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                String title = rs.getString("title");
-                String author = rs.getString("author");
-                Date releaseDate = rs.getDate("releaseDate");
-                int pages = rs.getInt("pages");
-                UUID borrowedBy = rs.getObject("borrowedBy") != null ? (UUID) rs.getObject("borrowedBy") : null;
-                UUID reservedBy = rs.getObject("reservedBy") != null ? (UUID) rs.getObject("reservedBy") : null;
+                String title = rs.getString("titre");
+                String author = rs.getString("auteur");
+                Date releaseDate = rs.getDate("datePublication");
+                int pages = rs.getInt("nombrePages");
+                UUID borrowedBy = rs.getObject("empruntePar") != null ? (UUID) rs.getObject("empruntePar") : null;
+                UUID reservedBy = rs.getObject("reservePar") != null ? (UUID) rs.getObject("reservePar") : null;
                 String type = rs.getString("type");
 
                 switch (type) {
@@ -155,7 +188,10 @@ public class DocumentDAO implements DocumentDAOInterface {
                         document = new JournalScientifique(id, title, author, releaseDate.toLocalDate(), pages);
                         break;
                     case "TheseUniversitaire":
-                        document = new TheseUniversitaire(id, title, author, releaseDate.toLocalDate(), pages);
+                        String universite = rs.getString("universite");
+                        String domaineEtude = rs.getString("domaineEtude");
+                        int anneeSoumission = rs.getInt("anneeSoumission");
+                        document = new TheseUniversitaire(id, title, author, releaseDate.toLocalDate(), pages, universite, domaineEtude, anneeSoumission);
                         break;
                 }
 
