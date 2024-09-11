@@ -1,64 +1,95 @@
 package com.bibliotheque.metier;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public abstract class Document {
-    protected int id;
-    protected String titre;
-    protected String auteur;
-    protected LocalDate datePublication;
-    protected int nombreDePages;
-    protected boolean emprunte ;
+    private UUID id;
+    private String titre;
+    private String auteur;
+    private LocalDate datePublication;
+    private int nombreDePages;
+    private UUID empruntePar;
+    private UUID reservePar;
 
-
-    // Constructeur
-
-    public Document(int id,String titre,String auteur ,LocalDate datePublication,int nombreDePages){
+    // Constructor
+    public Document(UUID id, String titre, String auteur, LocalDate datePublication, int nombreDePages) {
         this.id = id;
         this.titre = titre;
         this.auteur = auteur;
         this.datePublication = datePublication;
         this.nombreDePages = nombreDePages;
-        this.emprunte = false;
-
     }
 
-    //Getters
-    public int getId(){
+    // Abstract method
+    public abstract String getType();
+
+    // Getters and setters
+    public UUID getId() {
         return id;
     }
 
-    public String getTitre(){
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getTitre() {
         return titre;
+    }
+
+    public void setTitre(String titre) {
+        this.titre = titre;
     }
 
     public String getAuteur() {
         return auteur;
     }
 
+    public void setAuteur(String auteur) {
+        this.auteur = auteur;
+    }
+
     public LocalDate getDatePublication() {
         return datePublication;
+    }
+
+    public void setDatePublication(LocalDate datePublication) {
+        this.datePublication = datePublication;
     }
 
     public int getNombreDePages() {
         return nombreDePages;
     }
 
-    // Getter et Setter pour emprunte
-    public boolean isEmprunte() {
-        return emprunte;
+    public void setNombreDePages(int nombreDePages) {
+        this.nombreDePages = nombreDePages;
     }
 
-    public void setEmprunte(boolean emprunte) {
-        this.emprunte = emprunte;
+    public UUID getEmpruntePar() {
+        return empruntePar;
     }
 
-// Les méthodes abstraites
+    public void setEmpruntePar(UUID empruntePar) {
+        this.empruntePar = empruntePar;
+    }
 
-   public abstract void emprunter();
+    public UUID getReservePar() {
+        return reservePar;
+    }
 
-   public abstract void retourner();
+    public void setReservePar(UUID reservePar) {
+        this.reservePar = reservePar;
+    }
 
-   public abstract void afficherDetails();
-
+    // Method to display details
+    public void afficherDetails() {
+        System.out.println("ID: " + id);
+        System.out.println("Titre: " + titre);
+        System.out.println("Auteur: " + auteur);
+        System.out.println("Date de Publication: " + datePublication);
+        System.out.println("Nombre de Pages: " + nombreDePages);
+        System.out.println("Type: " + getType());
+        System.out.println("Emprunté par: " + (empruntePar != null ? empruntePar : "Non emprunté"));
+        System.out.println("Réservé par: " + (reservePar != null ? reservePar : "Non réservé"));
+    }
 }
