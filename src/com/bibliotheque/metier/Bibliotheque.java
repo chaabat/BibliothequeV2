@@ -128,4 +128,6 @@ public class Bibliotheque {
     public boolean annulerReservation(UUID idDocument) {
         return annulerReservationDocument(idDocument); // Delegates to the existing method
     }
+
+
 }

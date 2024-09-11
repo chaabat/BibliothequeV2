@@ -12,20 +12,18 @@ public abstract class Document {
     private UUID empruntePar;
     private UUID reservePar;
 
-    // Constructor with automatic UUID generation
-    public Document(String titre, String auteur, LocalDate datePublication, int nombreDePages) {
-        this.id = UUID.randomUUID(); // Automatically generate UUID
+    // Constructor with UUID provided
+    public Document(UUID id, String titre, String auteur, LocalDate datePublication, int nombreDePages) {
+        this.id = id;
         this.titre = titre;
         this.auteur = auteur;
         this.datePublication = datePublication;
         this.nombreDePages = nombreDePages;
     }
 
-    public Document(UUID id, String titre, String auteur, LocalDate datePublication, int nombreDePages) {
-
-
-
-
+    // Constructor with automatic UUID generation (optional use case)
+    public Document(String titre, String auteur, LocalDate datePublication, int nombreDePages) {
+        this(UUID.randomUUID(), titre, auteur, datePublication, nombreDePages);
     }
 
     // Abstract method
@@ -34,6 +32,10 @@ public abstract class Document {
     // Getters and setters
     public UUID getId() {
         return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public String getTitre() {
@@ -95,4 +97,5 @@ public abstract class Document {
         System.out.println("Emprunté par: " + (empruntePar != null ? empruntePar : "Non emprunté"));
         System.out.println("Réservé par: " + (reservePar != null ? reservePar : "Non réservé"));
     }
+
 }
