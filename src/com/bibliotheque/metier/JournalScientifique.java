@@ -1,5 +1,6 @@
 package com.bibliotheque.metier;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -18,6 +19,8 @@ public class JournalScientifique extends Document {
         this.domaineRecherche = domaineRecherche;
         this.editeur = editeur;
     }
+
+
 
     // Getters and Setters for domaineRecherche and editeur
     public String getDomaineRecherche() {

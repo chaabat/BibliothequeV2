@@ -5,6 +5,7 @@ import com.bibliotheque.metier.*;
 import com.bibliotheque.utilitaire.InputValidator;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -65,8 +66,9 @@ public class ConsoleUI {
             System.out.println("\n=== Gestion des Documents ===");
             System.out.println("1. Ajouter un document");
             System.out.println("2. Modifier un document");
-            System.out.println("3. Supprimer un document");
-            System.out.println("4. Retour au menu principal");
+            System.out.println("3. Rechercher un document");
+            System.out.println("4. Supprimer un document");
+            System.out.println("5. Retour au menu principal");
             System.out.print("Choisissez une option : ");
 
             int choix = scanner.nextInt();
@@ -80,15 +82,19 @@ public class ConsoleUI {
                     modifierDocument();
                     break;
                 case 3:
-                    supprimerDocument();
+                    rechercherDocument(); // Updated to call rechercherDocument
                     break;
                 case 4:
-                    return;
+                    supprimerDocument();
+                    break;
+                case 5:
+                    return; // Retour au menu principal
                 default:
                     System.out.println("Choix invalide, veuillez réessayer.");
             }
         }
     }
+
 
     private void afficherMenuUtilisateurs() {
         while (true) {
@@ -254,6 +260,10 @@ private void ajouterDocument() {
             System.out.println("Document ajouté avec succès.");
         }
     }
+    private void rechercherDocument() {
+    }
+
+
 
     private void modifierDocument() {
         System.out.println("\n=== Modifier un Document ===");

@@ -123,7 +123,7 @@ public class DocumentDAO implements DocumentDAOInterface {
                 if (rs.getString("ISBN") != null) {
                     document = new Livre(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("ISBN"));
                 } else if (rs.getInt("numero") != 0) {
-                    document = new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getInt("numero"));
+                    document = new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages);
                 } else if (rs.getString("domaineRecherche") != null) {
                     document = new JournalScientifique(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("domaineRecherche"), rs.getString("editeur"));
                 } else if (rs.getString("universite") != null) {
@@ -266,7 +266,7 @@ public class DocumentDAO implements DocumentDAOInterface {
                     if (rs.getString("ISBN") != null) {
                         document = new Livre(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("ISBN"));
                     } else if (rs.getInt("numero") != 0) {
-                        document = new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getInt("numero"));
+                        document = new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages);
                     } else if (rs.getString("domaineRecherche") != null) {
                         document = new JournalScientifique(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("domaineRecherche"), rs.getString("editeur"));
                     } else if (rs.getString("universite") != null) {
@@ -331,7 +331,7 @@ public class DocumentDAO implements DocumentDAOInterface {
                             break;
                         case 2: // Magazine
                             int numero = rs.getInt("numero");
-                            document = new Magazine(id, titreDocument, auteur, datePublication.toLocalDate(), nombrePages, numero);
+                            document = new Magazine(id, titreDocument, auteur, datePublication.toLocalDate(), nombrePages);
                             break;
                         case 3: // Journal Scientifique
                             String domaineRecherche = rs.getString("domaineRecherche");
@@ -359,6 +359,9 @@ public class DocumentDAO implements DocumentDAOInterface {
 
         return document;
     }
+
+
+
 
 
     @Override
