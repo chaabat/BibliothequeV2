@@ -26,8 +26,7 @@ public abstract class Document {
         this(UUID.randomUUID(), titre, auteur, datePublication, nombreDePages);
     }
 
-    // Abstract method
-    public abstract String getType();
+
 
     // Getters and setters
     public UUID getId() {
@@ -86,7 +85,6 @@ public abstract class Document {
         this.reservePar = reservePar;
     }
 
-    // Method to display details
     public void afficherDetails() {
         System.out.println("ID: " + id);
         System.out.println("Titre: " + titre);
@@ -96,6 +94,17 @@ public abstract class Document {
         System.out.println("Type: " + getType());
         System.out.println("Emprunté par: " + (empruntePar != null ? empruntePar : "Non emprunté"));
         System.out.println("Réservé par: " + (reservePar != null ? reservePar : "Non réservé"));
+        System.out.println(); // Add a blank line for better readability
     }
+
+    // Ensure you have a method to get the type of the document
+    public String getType() {
+        if (this instanceof Livre) return "Livre";
+        if (this instanceof Magazine) return "Magazine";
+        if (this instanceof JournalScientifique) return "Journal Scientifique";
+        if (this instanceof TheseUniversitaire) return "Thèse Universitaire";
+        return "Inconnu";
+    }
+
 
 }

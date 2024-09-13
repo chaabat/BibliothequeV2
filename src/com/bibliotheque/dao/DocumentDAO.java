@@ -413,4 +413,61 @@ public class DocumentDAO implements DocumentDAOInterface {
         return isDeleted;
     }
 
+
+
+        // Emprunter un document
+        public void emprunterDocument(UUID documentId, UUID utilisateurId) {
+            String sql = "UPDATE documents SET empruntePar = ? WHERE id = ? AND empruntePar IS NULL";
+            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setObject(1, utilisateurId);
+                pstmt.setObject(2, documentId);
+
+                int rowsUpdated = pstmt.executeUpdate();
+                if (rowsUpdated > 0) {
+                    connection.commit();
+                    System.out.println("Document emprunté avec succès.");
+                } else {
+                    System.out.println("Ce document est déjà emprunté ou n'existe pas.");
+                }
+            } catch (SQLException e) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+                e.printStackTrace();
+            }
+        }
+
+        // Retourner un document
+        public void retournerDocument(UUID documentId) {
+            String sql = "UPDATE documents SET empruntePar = NULL WHERE id = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setObject(1, documentId);
+
+                int rowsUpdated = pstmt.executeUpdate();
+                if (rowsUpdated > 0) {
+                    connection.commit();
+                    System.out.println("Document retourné avec succès.");
+                } else {
+                    System.out.println("Ce document n'a pas été emprunté ou n'existe pas.");
+                }
+            } catch (SQLException e) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+                e.printStackTrace();
+            }
+        }
+
+
+
+
+    public Document trouverDocumentParTitre(String titre) {
+        return null;
+    }
 }
+
+

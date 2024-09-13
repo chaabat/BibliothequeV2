@@ -5,10 +5,13 @@ import java.util.UUID;
 public class Etudiant extends Utilisateur {
     private String filiere;
 
-    public Etudiant(UUID id, String nom, String email, String motDePasse, String filiere) {
-        super(id, nom, email, motDePasse);
-        this.filiere = filiere;
+
+
+    public Etudiant(UUID id, String nom, String email, String programmeEtudes) {
+        super(id, nom, email, programmeEtudes);
     }
+
+
 
     public String getFiliere() { return filiere; }
     public void setFiliere(String filiere) { this.filiere = filiere; }

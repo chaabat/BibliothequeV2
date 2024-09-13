@@ -5,10 +5,12 @@ import java.util.UUID;
 public class Professeur extends Utilisateur {
     private String departement;
 
-    public Professeur(UUID id, String nom, String email, String motDePasse, String departement) {
-        super(id, nom, email, motDePasse);
-        this.departement = departement;
+
+    public Professeur(UUID id, String nom, String email, String departement) {
+        super(id, nom, email, departement);
     }
+
+
 
     public String getDepartement() { return departement; }
     public void setDepartement(String departement) { this.departement = departement; }

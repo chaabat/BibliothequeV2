@@ -173,7 +173,7 @@ public class ConsoleUI {
 
 
 
-private void ajouterDocument() {
+    private void ajouterDocument() {
         System.out.println("\n=== Ajouter un Document ===");
         System.out.print("Titre du document : ");
         String titre = scanner.nextLine();
@@ -416,13 +416,13 @@ private void ajouterDocument() {
         switch (choix) {
             case 1:
                 System.out.print("Filière de l'étudiant : ");
-                String filiere = scanner.nextLine();
-                utilisateur = new Etudiant(idUtilisateur, nom, email, motDePasse, filiere);
+                String programmeEtudes = scanner.nextLine();
+                utilisateur = new Etudiant(idUtilisateur, nom, email, programmeEtudes);
                 break;
             case 2:
                 System.out.print("Département du professeur : ");
                 String departement = scanner.nextLine();
-                utilisateur = new Professeur(idUtilisateur, nom, email, motDePasse, departement);
+                utilisateur = new Professeur(idUtilisateur, nom, email, departement);
                 break;
             default:
                 System.out.println("Choix invalide.");

@@ -1,5 +1,7 @@
 package com.bibliotheque.metier;
 
+import com.bibliotheque.dao.DocumentDAO;
+import com.bibliotheque.dao.UtilisateurDAO;
 import com.bibliotheque.metier.Interface.Reservable;
 import com.bibliotheque.metier.Interface.Empruntable;
 
@@ -11,7 +13,7 @@ public class Bibliotheque {
     private List<Document> documents;
     private List<Utilisateur> utilisateurs;
 
-    public Bibliotheque() {
+    public Bibliotheque(UtilisateurDAO utilisateurDAO, DocumentDAO documentDAO) {
         documents = new ArrayList<>();
         utilisateurs = new ArrayList<>();
     }
