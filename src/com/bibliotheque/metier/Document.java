@@ -3,7 +3,7 @@ package com.bibliotheque.metier;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public abstract class Document {
+public class Document {
     private UUID id;
     private String titre;
     private String auteur;

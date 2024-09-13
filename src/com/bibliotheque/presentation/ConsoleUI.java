@@ -510,7 +510,7 @@ public class ConsoleUI {
         }
         UUID idDocument = UUID.fromString(idDocumentStr);
 
-        if (bibliotheque.annulerReservation(idDocument)) {
+        if (bibliotheque.annulerReservationDocument(idDocument)) {
             System.out.println("Réservation annulée avec succès.");
         } else {
             System.out.println("L'annulation de la réservation a échoué.");

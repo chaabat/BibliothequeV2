@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.bibliotheque.dao.DatabaseConnection.connection;
-
 public class UtilisateurDAO implements UtilisateurDAOInterface {
 
     private static Connection connection;
@@ -19,14 +17,16 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
     public UtilisateurDAO() {
         try {
             this.connection = DatabaseConnection.getConnection();
-            this.connection.setAutoCommit(false); // Désactiver l'auto-commit pour une gestion manuelle des transactions
+            this.connection.setAutoCommit(false); // Disable auto-commit for manual transaction management
         } catch (SQLException e) {
-            e.printStackTrace(); // Considérez l'utilisation d'un logger pour une meilleure gestion des erreurs
+            e.printStackTrace();
         }
     }
 
+
+
     @Override
-    public void ajouterUtilisateur(Utilisateur utilisateur) {
+    public void ajouterUtilisateur(Utilisateur utilisateur) { // Removed 'static' here
         String sqlUtilisateur = "INSERT INTO utilisateurs (id, nom, email) VALUES (?, ?, ?)";
         String sqlEtudiant = "INSERT INTO etudiants (id, programmeEtude) VALUES (?, ?)";
         String sqlProfesseur = "INSERT INTO professeurs (id, departement) VALUES (?, ?)";
@@ -78,7 +78,7 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
 
                 Utilisateur utilisateur = null;
 
-                // Vérification si l'utilisateur est un étudiant
+                // Check if the user is a student
                 String sqlEtudiant = "SELECT programmeEtude FROM etudiants WHERE id = ?";
                 try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
                     pstmtEtudiant.setObject(1, id);
@@ -89,7 +89,7 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
                     }
                 }
 
-                // Si ce n'est pas un étudiant, vérifier s'il est un professeur
+                // If not a student, check if they are a professor
                 if (utilisateur == null) {
                     String sqlProfesseur = "SELECT departement FROM professeurs WHERE id = ?";
                     try (PreparedStatement pstmtProfesseur = connection.prepareStatement(sqlProfesseur)) {
@@ -120,13 +120,11 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
         String sqlProfesseur = "UPDATE professeurs SET departement = ? WHERE id = ?";
 
         try (PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
-            // Mise à jour dans la table utilisateurs
             pstmtUtilisateur.setString(1, utilisateur.getNom());
             pstmtUtilisateur.setString(2, utilisateur.getEmail());
             pstmtUtilisateur.setObject(3, utilisateur.getId());
             pstmtUtilisateur.executeUpdate();
 
-            // Mise à jour dans la table etudiants si l'utilisateur est un étudiant
             if (utilisateur instanceof Etudiant) {
                 try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
                     pstmtEtudiant.setString(1, ((Etudiant) utilisateur).getProgrammeEtudes());
@@ -134,7 +132,6 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
                     pstmtEtudiant.executeUpdate();
                 }
             } else if (utilisateur instanceof Professeur) {
-                // Mise à jour dans la table professeurs si l'utilisateur est un professeur
                 try (PreparedStatement pstmtProfesseur = connection.prepareStatement(sqlProfesseur)) {
                     pstmtProfesseur.setString(1, ((Professeur) utilisateur).getDepartement());
                     pstmtProfesseur.setObject(2, utilisateur.getId());
@@ -145,6 +142,13 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
             connection.commit();
             System.out.println("Utilisateur mis à jour avec succès.");
         } catch (SQLException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback(); // Rollback changes in case of error
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
         }
     }
@@ -156,17 +160,14 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
         String sqlProfesseur = "DELETE FROM professeurs WHERE id = ?";
 
         try (PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
-            // Suppression de l'utilisateur dans la table utilisateurs
             pstmtUtilisateur.setObject(1, id);
             pstmtUtilisateur.executeUpdate();
 
-            // Suppression de l'étudiant dans la table etudiants
             try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
                 pstmtEtudiant.setObject(1, id);
                 pstmtEtudiant.executeUpdate();
             }
 
-            // Suppression du professeur dans la table professeurs
             try (PreparedStatement pstmtProfesseur = connection.prepareStatement(sqlProfesseur)) {
                 pstmtProfesseur.setObject(1, id);
                 pstmtProfesseur.executeUpdate();
@@ -175,6 +176,13 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
             connection.commit();
             System.out.println("Utilisateur supprimé avec succès.");
         } catch (SQLException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback(); // Rollback changes in case of error
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
         }
     }
@@ -192,7 +200,7 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
                 String nom = rs.getString("nom");
                 String email = rs.getString("email");
 
-                // Vérification si l'utilisateur est un étudiant
+                // Check if the user is a student
                 String sqlEtudiant = "SELECT programmeEtude FROM etudiants WHERE id = ?";
                 try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
                     pstmtEtudiant.setObject(1, id);
@@ -203,7 +211,7 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
                     }
                 }
 
-                // Si ce n'est pas un étudiant, vérifier s'il est un professeur
+                // If not a student, check if they are a professor
                 if (utilisateur == null) {
                     String sqlProfesseur = "SELECT departement FROM professeurs WHERE id = ?";
                     try (PreparedStatement pstmtProfesseur = connection.prepareStatement(sqlProfesseur)) {
@@ -224,6 +232,6 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
     }
 
     public Utilisateur trouverUtilisateurParNom(String nom) {
-        return null;
+        return null; // Not implemented
     }
 }

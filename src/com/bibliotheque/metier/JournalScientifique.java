@@ -22,6 +22,7 @@ public class JournalScientifique extends Document {
 
 
 
+
     // Getters and Setters for domaineRecherche and editeur
     public String getDomaineRecherche() {
         return domaineRecherche;

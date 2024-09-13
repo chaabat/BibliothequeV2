@@ -465,9 +465,13 @@ public class DocumentDAO implements DocumentDAOInterface {
 
 
 
-    public Document trouverDocumentParTitre(String titre) {
-        return null;
-    }
+
+    @Override
+    public List<Document> rechercherDocumentParTitre(String titre) {
+      return null;
+
+
+}
 }
 
 

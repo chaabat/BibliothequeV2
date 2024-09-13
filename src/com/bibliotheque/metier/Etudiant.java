@@ -26,4 +26,8 @@ public class Etudiant extends Utilisateur {
     public String getProgrammeEtudes() {
         return null;
     }
+
+    public int getLimiteEmprunt() {
+        return 0;
+    }
 }

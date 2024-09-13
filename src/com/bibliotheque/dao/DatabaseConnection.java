@@ -5,13 +5,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    static Connection connection;
+    private static Connection connection;
 
     private DatabaseConnection() {
     }
 
     public static Connection getConnection() throws SQLException {
-        if (connection == null) {
+        if (connection == null || connection.isClosed()) {
             try {
                 Class.forName("org.postgresql.Driver");
                 connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/bibliotheque", "postgres", "chaabat");
@@ -21,7 +21,4 @@ public class DatabaseConnection {
         }
         return connection;
     }
-
-
-
 }

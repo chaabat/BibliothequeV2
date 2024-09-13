@@ -5,51 +5,48 @@ import com.bibliotheque.dao.UtilisateurDAO;
 import com.bibliotheque.metier.Interface.Reservable;
 import com.bibliotheque.metier.Interface.Empruntable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class Bibliotheque {
-    private List<Document> documents;
-    private List<Utilisateur> utilisateurs;
+    private UtilisateurDAO utilisateurDAO;
+    private DocumentDAO documentDAO;
 
     public Bibliotheque(UtilisateurDAO utilisateurDAO, DocumentDAO documentDAO) {
-        documents = new ArrayList<>();
-        utilisateurs = new ArrayList<>();
+        this.utilisateurDAO = utilisateurDAO;
+        this.documentDAO = documentDAO;
     }
 
-    // Ajoute un document à la bibliothèque
-    public void ajouterDocument(Document document) {
-        documents.add(document);
-    }
-
-    // Ajoute un utilisateur à la bibliothèque
     public void ajouterUtilisateur(Utilisateur utilisateur) {
-        utilisateurs.add(utilisateur);
+        utilisateurDAO.ajouterUtilisateur(utilisateur);
     }
 
-    // Affiche les détails de tous les documents
+    public void ajouterDocument(Document document) {
+        documentDAO.ajouterDocument(document);
+    }
+
     public void afficherDocuments() {
+        List<Document> documents = documentDAO.getAllDocuments();
         for (Document document : documents) {
             document.afficherDetails();
         }
     }
 
-    // Affiche les détails de tous les utilisateurs
     public void afficherUtilisateurs() {
+        List<Utilisateur> utilisateurs = utilisateurDAO.getAllUtilisateurs();
         for (Utilisateur utilisateur : utilisateurs) {
             utilisateur.afficherDetails();
         }
     }
 
-    // Méthode pour réserver un document
     public boolean reserverDocument(UUID idDocument, UUID idUtilisateur) {
-        Document document = trouverDocumentParId(idDocument);
-        Utilisateur utilisateur = trouverUtilisateurParId(idUtilisateur);
+        Document document = documentDAO.rechercherDocumentParId(idDocument);
+        Utilisateur utilisateur = utilisateurDAO.rechercherUtilisateurParId(idUtilisateur);
         if (document != null && utilisateur != null && document instanceof Reservable) {
             Reservable reservableDoc = (Reservable) document;
             if (!reservableDoc.estReserve()) {
-                reservableDoc.reserver(utilisateur); // Now accepts Utilisateur
+                reservableDoc.reserver(utilisateur);
+                documentDAO.mettreAJourDocument(document);
                 System.out.println("Le document a été réservé avec succès.");
                 return true;
             } else {
@@ -60,12 +57,13 @@ public class Bibliotheque {
     }
 
     public boolean emprunterDocument(UUID idDocument, UUID idUtilisateur) {
-        Document document = trouverDocumentParId(idDocument);
-        Utilisateur utilisateur = trouverUtilisateurParId(idUtilisateur);
+        Document document = documentDAO.rechercherDocumentParId(idDocument);
+        Utilisateur utilisateur = utilisateurDAO.rechercherUtilisateurParId(idUtilisateur);
         if (document != null && utilisateur != null && document instanceof Empruntable) {
             Empruntable empruntableDoc = (Empruntable) document;
             if (empruntableDoc.estDisponible()) {
-                empruntableDoc.emprunter(utilisateur); // Now accepts Utilisateur
+                empruntableDoc.emprunter(utilisateur);
+                documentDAO.mettreAJourDocument(document);
                 System.out.println("Le document a été emprunté avec succès.");
                 return true;
             } else {
@@ -75,14 +73,13 @@ public class Bibliotheque {
         return false;
     }
 
-
-    // Méthode pour annuler une réservation de document
     public boolean annulerReservationDocument(UUID idDocument) {
-        Document document = trouverDocumentParId(idDocument);
+        Document document = documentDAO.rechercherDocumentParId(idDocument);
         if (document != null && document instanceof Reservable) {
             Reservable reservableDoc = (Reservable) document;
             if (reservableDoc.estReserve()) {
                 reservableDoc.annulerReservation();
+                documentDAO.mettreAJourDocument(document);
                 System.out.println("La réservation a été annulée.");
                 return true;
             } else {
@@ -92,44 +89,19 @@ public class Bibliotheque {
         return false;
     }
 
-
-
-    // Méthode pour retourner un document emprunté
     public boolean retournerDocument(UUID idDocument) {
-        Document document = trouverDocumentParId(idDocument);
+        Document document = documentDAO.rechercherDocumentParId(idDocument);
         if (document != null && document instanceof Empruntable) {
             Empruntable empruntableDoc = (Empruntable) document;
             empruntableDoc.retourner();
+            documentDAO.mettreAJourDocument(document);
             System.out.println("Le document a été retourné.");
             return true;
         }
         return false;
     }
 
-    // Trouve un document par son UUID
-    private Document trouverDocumentParId(UUID idDocument) {
-        for (Document doc : documents) {
-            if (doc.getId().equals(idDocument)) {
-                return doc;
-            }
-        }
-        return null;
+    public List<Document> rechercherDocumentParTitre(String titre) {
+        return documentDAO.rechercherDocumentParTitre(titre);
     }
-
-    // Trouve un utilisateur par son UUID
-    private Utilisateur trouverUtilisateurParId(UUID idUtilisateur) {
-        for (Utilisateur user : utilisateurs) {
-            if (user.getId().equals(idUtilisateur)) {
-                return user;
-            }
-        }
-        return null;
-    }
-
-    // Méthode publique pour annuler une réservation en utilisant l'ID du document
-    public boolean annulerReservation(UUID idDocument) {
-        return annulerReservationDocument(idDocument); // Delegates to the existing method
-    }
-
-
 }
