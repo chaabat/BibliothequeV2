@@ -151,6 +151,8 @@ public class DocumentDAO implements DocumentDAOInterface {
 
 
 
+
+
     @Override
     public void mettreAJourDocument(Document document) {
         String sql = null;
@@ -541,7 +543,10 @@ public class DocumentDAO implements DocumentDAOInterface {
             }
         }
 
-        // Retourner un document
+
+
+
+    // Retourner un document
         public void retournerDocument(UUID documentId) {
             String sql = "UPDATE documents SET empruntePar = NULL WHERE id = ?";
             try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

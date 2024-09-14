@@ -16,4 +16,6 @@ public interface DocumentDAOInterface {
     boolean supprimerDocumentParTitreEtType(String titreDocument, int typeDocument);
     List<Document> rechercherDocumentParTitre(String titre);
 
+
+
 }

@@ -285,4 +285,19 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
 
         return utilisateur;
     }
+
+    public int countDocumentsEmpruntes(UUID utilisateurId) {
+        String sql = "SELECT COUNT(*) FROM documents WHERE empruntePar = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setObject(1, utilisateurId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1); // Return the count
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0; // Return 0 if something goes wrong
+    }
+
 }

@@ -97,13 +97,20 @@ public class Bibliotheque {
             return false;
         }
 
-        boolean isStudent = utilisateur instanceof Etudiant;
-
-        if (isStudent && !(document instanceof Livre || document instanceof Magazine)) {
-            System.out.println("Les étudiants ne peuvent emprunter que des livres ou des magazines.");
-            return false;
+        // Check if the user is a student and enforce the borrowing rules
+        if (utilisateur instanceof Etudiant) {
+            int borrowedCount = utilisateurDAO.countDocumentsEmpruntes(utilisateur.getId());
+            if (borrowedCount >= 5) {
+                System.out.println("L'étudiant a déjà emprunté 5 documents.");
+                return false;
+            }
+            if (!(document instanceof Livre || document instanceof Magazine)) {
+                System.out.println("Les étudiants ne peuvent emprunter que des livres ou des magazines.");
+                return false;
+            }
         }
 
+        // Professors can borrow any document type, so no need for specific checks here
         if (document instanceof Empruntable) {
             Empruntable empruntableDoc = (Empruntable) document;
             if (empruntableDoc.estDisponible()) {
@@ -119,6 +126,7 @@ public class Bibliotheque {
         }
         return false;
     }
+
 
     public boolean annulerReservationDocument(UUID idDocument) {
         Document document = documentDAO.rechercherDocumentParId(idDocument);
@@ -152,7 +160,7 @@ public class Bibliotheque {
         return false;
     }
 
-    public List<Document> rechercherDocumentParTitre(String titre) {
-        return documentDAO.rechercherDocumentParTitre(titre);
+    public Document rechercherDocumentParTitre(String titre) {
+        return (Document) documentDAO.rechercherDocumentParTitre(titre);
     }
 }
