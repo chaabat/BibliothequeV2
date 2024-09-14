@@ -2,9 +2,11 @@ package com.bibliotheque.presentation;
 
 import com.bibliotheque.dao.DocumentDAO;
 import com.bibliotheque.dao.Interface.DocumentDAOInterface;
+import com.bibliotheque.dao.UtilisateurDAO;
 import com.bibliotheque.metier.*;
 import com.bibliotheque.utilitaire.InputValidator;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
@@ -200,27 +202,211 @@ public class ConsoleUI {
     }
 
     // Methods for user management
-    private void afficherMenuUtilisateurs() {
+    public void afficherMenuUtilisateurs() {
         while (true) {
-            System.out.println("\n=== Gestion des Utilisateurs ===");
+            System.out.println("\n=== Menu Bibliothèque ===");
             System.out.println("1. Ajouter un utilisateur");
-            System.out.println("2. Retour au menu principal");
+            System.out.println("2. Afficher tous les utilisateurs");
+            System.out.println("3. Rechercher un utilisateur");
+            System.out.println("4. Modifier un utilisateur");
+            System.out.println("5. Supprimer un utilisateur");
+            System.out.println("6. Quitter");
             System.out.print("Choisissez une option : ");
 
-            int choix = scanner.nextInt();
-            scanner.nextLine(); // Consommer la nouvelle ligne
+            int choix = Integer.parseInt(scanner.nextLine());
 
             switch (choix) {
                 case 1:
                     ajouterUtilisateur();
                     break;
                 case 2:
+                    afficherTousUtilisateurs();
+                    break;
+                case 3:
+                    rechercherUtilisateur();
+                    break;
+                case 4:
+                    modifierUtilisateur();
+                    break;
+                case 5:
+                    supprimerUtilisateur();
+                    break;
+                case 6:
+                    System.out.println("Au revoir!");
                     return;
                 default:
-                    System.out.println("Choix invalide, veuillez réessayer.");
+                    System.out.println("Option invalide, veuillez réessayer.");
             }
         }
     }
+
+    private void ajouterUtilisateur() {
+        System.out.println("\n=== Ajouter un Utilisateur ===");
+
+        System.out.println("1. Ajouter un étudiant");
+        System.out.println("2. Ajouter un professeur");
+        System.out.print("Choisissez une option (1 ou 2) : ");
+        String choixStr = scanner.nextLine();
+
+        if (!InputValidator.isValidInteger(choixStr)) {
+            System.out.println("Option invalide. Veuillez entrer un nombre.");
+            return;
+        }
+
+        int choix = Integer.parseInt(choixStr);
+        UUID id = UUID.randomUUID(); // Generate a unique ID
+        String nom, email;
+
+        // Validate name
+        do {
+            System.out.print("Nom de l'utilisateur : ");
+            nom = scanner.nextLine();
+            if (!InputValidator.isNotEmpty(nom)) {
+                System.out.println("Le nom ne peut pas être vide.");
+            }
+        } while (!InputValidator.isNotEmpty(nom));
+
+        // Validate email
+        do {
+            System.out.print("Email de l'utilisateur : ");
+            email = scanner.nextLine();
+            if (!InputValidator.isValidEmail(email)) {
+                System.out.println("L'email est invalide.");
+            }
+        } while (!InputValidator.isValidEmail(email));
+
+        switch (choix) {
+            case 1:
+                // Adding an Etudiant
+                String programmeEtudes;
+                do {
+                    System.out.print("Programme d'études : ");
+                    programmeEtudes = scanner.nextLine();
+                    if (!InputValidator.isNotEmpty(programmeEtudes)) {
+                        System.out.println("Le programme d'études ne peut pas être vide.");
+                    }
+                } while (!InputValidator.isNotEmpty(programmeEtudes));
+
+                Utilisateur etudiant = new Etudiant(id, nom, email, programmeEtudes);
+                bibliotheque.ajouterUtilisateur(etudiant);
+                System.out.println("Étudiant ajouté avec succès.");
+                break;
+
+            case 2:
+                // Adding a Professeur
+                String departement;
+                do {
+                    System.out.print("Département : ");
+                    departement = scanner.nextLine();
+                    if (!InputValidator.isNotEmpty(departement)) {
+                        System.out.println("Le département ne peut pas être vide.");
+                    }
+                } while (!InputValidator.isNotEmpty(departement));
+
+                Utilisateur professeur = new Professeur(id, nom, email, departement);
+                bibliotheque.ajouterUtilisateur(professeur);
+                System.out.println("Professeur ajouté avec succès.");
+                break;
+
+            default:
+                System.out.println("Option invalide. Veuillez choisir 1 pour étudiant ou 2 pour professeur.");
+        }
+    }
+
+
+
+
+    private void afficherTousUtilisateurs() {
+        List<Utilisateur> utilisateurs = bibliotheque.getAllUtilisateurs();
+
+        if (utilisateurs.isEmpty()) {
+            System.out.println("Aucun utilisateur trouvé.");
+        } else {
+            for (Utilisateur utilisateur : utilisateurs) {
+                System.out.println(utilisateur); // Ensure toString() is well-defined for Utilisateur
+            }
+        }
+    }
+
+    private void rechercherUtilisateur() {
+        System.out.println("\n=== Rechercher un Utilisateur ===");
+        System.out.print("Le Nom d'utilisateur : ");
+        String recherche = scanner.nextLine();
+
+
+        try {
+            UUID id = UUID.fromString(recherche);
+            Utilisateur utilisateur = bibliotheque.rechercherUtilisateurParId(id);
+            if (utilisateur != null) {
+                System.out.println(utilisateur); // Ensure toString() is well-defined for Utilisateur
+            } else {
+                System.out.println("Utilisateur non trouvé.");
+            }
+        } catch (IllegalArgumentException e) {
+            // If it's not a valid UUID, try to search by name
+            Utilisateur utilisateur = bibliotheque.rechercherUtilisateurParNom(recherche);
+            if (utilisateur != null) {
+                System.out.println(utilisateur); // Ensure toString() is well-defined for Utilisateur
+            } else {
+                System.out.println("Utilisateur non trouvé.");
+            }
+        }
+    }
+
+    private void modifierUtilisateur() {
+        System.out.println("\n=== Modifier un Utilisateur ===");
+        System.out.print("Nom de l'utilisateur à modifier : ");
+        String nomUtilisateur = scanner.nextLine();
+
+        Utilisateur utilisateur = bibliotheque.rechercherUtilisateurParNom(nomUtilisateur);
+        if (utilisateur == null) {
+            System.out.println("Utilisateur non trouvé.");
+            return;
+        }
+
+        System.out.print("Nouveau nom de l'utilisateur : ");
+        String nouveauNom = scanner.nextLine();
+
+        System.out.print("Nouvel email de l'utilisateur : ");
+        String nouvelEmail = scanner.nextLine();
+
+
+        utilisateur.setNom(nouveauNom);
+        utilisateur.setEmail(nouvelEmail);
+
+        if (utilisateur instanceof Etudiant) {
+            System.out.print("Nouveau programme d'études : ");
+            String nouveauProgrammeEtudes = scanner.nextLine();
+            ((Etudiant) utilisateur).setProgrammeEtudes(nouveauProgrammeEtudes);
+        } else if (utilisateur instanceof Professeur) {
+            System.out.print("Nouveau département : ");
+            String nouveauDepartement = scanner.nextLine();
+            ((Professeur) utilisateur).setDepartement(nouveauDepartement);
+        }
+
+        bibliotheque.modifierUtilisateur(utilisateur);
+        System.out.println("Utilisateur modifié avec succès.");
+    }
+
+    private void supprimerUtilisateur() {
+        System.out.println("\n=== Supprimer un Utilisateur ===");
+        System.out.print("Nom de l'utilisateur à supprimer : ");
+        String nomUtilisateur = scanner.nextLine();
+
+        Utilisateur utilisateur = bibliotheque.rechercherUtilisateurParNom(nomUtilisateur);
+        if (utilisateur == null) {
+            System.out.println("Utilisateur non trouvé.");
+            return;
+        }
+
+        boolean success = bibliotheque.supprimerUtilisateur(utilisateur.getId());
+        if (success) {
+            System.out.println("Utilisateur supprimé avec succès.");
+        } else {
+            System.out.println("Erreur lors de la suppression de l'utilisateur.");
+        }
+    }
+
 
     // Methods for loan management
     private void afficherMenuEmprunts() {
@@ -275,6 +461,9 @@ public class ConsoleUI {
             }
         }
     }
+
+
+
 
 
     private void ajouterDocument() {
@@ -515,46 +704,8 @@ public class ConsoleUI {
 
 
 
-    private void ajouterUtilisateur() {
-        System.out.println("\n=== Ajouter un Utilisateur ===");
-        System.out.println("1. Étudiant");
-        System.out.println("2. Professeur");
-        System.out.print("Choisissez le type d'utilisateur (1/2) : ");
-        int choix = scanner.nextInt();
-        scanner.nextLine(); // Consommer la nouvelle ligne
 
-        // Generate a new UUID for the utilisateur
-        UUID idUtilisateur = UUID.randomUUID();
 
-        System.out.print("Nom de l'utilisateur : ");
-        String nom = scanner.nextLine();
-
-        System.out.print("Email de l'utilisateur : ");
-        String email = scanner.nextLine();
-
-        System.out.print("Mot de passe de l'utilisateur : ");
-        String motDePasse = scanner.nextLine();
-
-        Utilisateur utilisateur = null;
-        switch (choix) {
-            case 1:
-                System.out.print("Filière de l'étudiant : ");
-                String programmeEtudes = scanner.nextLine();
-                utilisateur = new Etudiant(idUtilisateur, nom, email, programmeEtudes);
-                break;
-            case 2:
-                System.out.print("Département du professeur : ");
-                String departement = scanner.nextLine();
-                utilisateur = new Professeur(idUtilisateur, nom, email, departement);
-                break;
-            default:
-                System.out.println("Choix invalide.");
-                return;
-        }
-
-        bibliotheque.ajouterUtilisateur(utilisateur);
-        System.out.println("Utilisateur ajouté avec succès.");
-    }
 
     private void emprunterDocument() {
         System.out.println("\n=== Emprunter un Document ===");

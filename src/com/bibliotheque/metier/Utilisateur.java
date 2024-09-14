@@ -8,6 +8,7 @@ public abstract class Utilisateur {
     protected String email;
     protected String motDePasse;
 
+    // Constructor
     public Utilisateur(UUID id, String nom, String email, String motDePasse) {
         this.id = id;
         this.nom = nom;
@@ -15,6 +16,7 @@ public abstract class Utilisateur {
         this.motDePasse = motDePasse;
     }
 
+    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
     public String getNom() { return nom; }
@@ -24,7 +26,19 @@ public abstract class Utilisateur {
     public String getMotDePasse() { return motDePasse; }
     public void setMotDePasse(String motDePasse) { this.motDePasse = motDePasse; }
 
+    // Abstract Methods
     public abstract void afficherDetails();
     public abstract boolean peutEmprunter();
     public abstract String getInformationsSupplementaires();
+    public abstract int getLimiteEmprunt();
+
+    @Override
+    public String toString() {
+        return "Utilisateur{" +
+                "id=" + id +
+                ", nom='" + nom + '\'' +
+                ", email='" + email + '\'' +
+                ", motDePasse='" + motDePasse + '\'' +
+                '}';
+    }
 }

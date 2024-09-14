@@ -5,20 +5,49 @@ import java.util.UUID;
 public class Professeur extends Utilisateur {
     private String departement;
 
-
-    public Professeur(UUID id, String nom, String email, String departement) {
-        super(id, nom, email, departement);
+    // Constructor
+    public Professeur(UUID id, String nom, String email, String motDePasse) {
+        super(id, nom, email, motDePasse);
+        this.departement = departement;
     }
 
+    // Getters and Setters
+    public String getDepartement() {
+        return departement;
+    }
 
-
-    public String getDepartement() { return departement; }
-    public void setDepartement(String departement) { this.departement = departement; }
+    public void setDepartement(String departement) {
+        this.departement = departement;
+    }
 
     @Override
-    public void afficherDetails() { /* Implémentation */ }
+    public void afficherDetails() {
+        // Implementation here
+    }
+
     @Override
-    public boolean peutEmprunter() { return true; }
+    public boolean peutEmprunter() {
+        return true; // Define the logic if needed
+    }
+
     @Override
-    public String getInformationsSupplementaires() { return "Département: " + departement; }
+    public String getInformationsSupplementaires() {
+        return "Département: " + departement;
+    }
+
+    @Override
+    public int getLimiteEmprunt() {
+        // Define the limit for Professeur
+        return 10; // Example limit
+    }
+
+    @Override
+    public String toString() {
+        return "Professeur{" +
+                "id=" + getId() +
+                ", nom='" + getNom() + '\'' +
+                ", email='" + getEmail() + '\'' +
+                ", departement='" + departement + '\'' +
+                '}';
+    }
 }

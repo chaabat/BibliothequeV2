@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public class UtilisateurDAO implements UtilisateurDAOInterface {
 
-    private static Connection connection;
+    private Connection connection;
 
     public UtilisateurDAO() {
         try {
@@ -23,45 +23,56 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
         }
     }
 
-
-
     @Override
-    public void ajouterUtilisateur(Utilisateur utilisateur) { // Removed 'static' here
+    public void ajouterUtilisateur(Utilisateur utilisateur) {
         String sqlUtilisateur = "INSERT INTO utilisateurs (id, nom, email) VALUES (?, ?, ?)";
         String sqlEtudiant = "INSERT INTO etudiants (id, programmeEtude) VALUES (?, ?)";
         String sqlProfesseur = "INSERT INTO professeurs (id, departement) VALUES (?, ?)";
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
+        try (PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
 
-            // Insertion dans la table utilisateurs
+            // Insertion dans la table utilisateurs (Parent table)
             pstmtUtilisateur.setObject(1, utilisateur.getId());
             pstmtUtilisateur.setString(2, utilisateur.getNom());
             pstmtUtilisateur.setString(3, utilisateur.getEmail());
             pstmtUtilisateur.executeUpdate();
 
-            // Si c'est un étudiant, insérer dans la table etudiants
+            // If the user is an instance of Etudiant, insert into etudiants table
             if (utilisateur instanceof Etudiant) {
+                Etudiant etudiant = (Etudiant) utilisateur; // Cast utilisateur to Etudiant to access its fields
                 try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
-                    pstmtEtudiant.setObject(1, utilisateur.getId());
-                    pstmtEtudiant.setString(2, ((Etudiant) utilisateur).getProgrammeEtudes());
+                    pstmtEtudiant.setObject(1, etudiant.getId());
+                    pstmtEtudiant.setString(2, etudiant.getProgrammeEtudes()); // Ensure the correct field is set
                     pstmtEtudiant.executeUpdate();
                 }
-            } else if (utilisateur instanceof Professeur) {
-                // Si c'est un professeur, insérer dans la table professeurs
+            }
+            // If the user is an instance of Professeur, insert into professeurs table
+            else if (utilisateur instanceof Professeur) {
+                Professeur professeur = (Professeur) utilisateur; // Cast utilisateur to Professeur to access its fields
                 try (PreparedStatement pstmtProfesseur = connection.prepareStatement(sqlProfesseur)) {
-                    pstmtProfesseur.setObject(1, utilisateur.getId());
-                    pstmtProfesseur.setString(2, ((Professeur) utilisateur).getDepartement());
+                    pstmtProfesseur.setObject(1, professeur.getId());
+                    pstmtProfesseur.setString(2, professeur.getDepartement()); // Ensure the correct field is set
                     pstmtProfesseur.executeUpdate();
                 }
             }
 
+            // Commit the transaction if everything goes well
             connection.commit();
             System.out.println("Utilisateur ajouté avec succès.");
+
         } catch (SQLException e) {
+            // Rollback the transaction in case of any error
+            try {
+                if (connection != null) {
+                    connection.rollback(); // Rollback changes in case of error
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
         }
     }
+
 
     @Override
     public List<Utilisateur> getAllUtilisateurs() {
@@ -231,7 +242,47 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
         return utilisateur;
     }
 
+    @Override
     public Utilisateur trouverUtilisateurParNom(String nom) {
-        return null; // Not implemented
+        String sqlUtilisateur = "SELECT * FROM utilisateurs WHERE nom = ?";
+        Utilisateur utilisateur = null;
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sqlUtilisateur)) {
+            pstmt.setString(1, nom);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                UUID id = (UUID) rs.getObject("id");
+                String email = rs.getString("email");
+
+                // Check if the user is a student
+                String sqlEtudiant = "SELECT programmeEtude FROM etudiants WHERE id = ?";
+                try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
+                    pstmtEtudiant.setObject(1, id);
+                    ResultSet rsEtudiant = pstmtEtudiant.executeQuery();
+                    if (rsEtudiant.next()) {
+                        String programmeEtudes = rsEtudiant.getString("programmeEtude");
+                        utilisateur = new Etudiant(id, nom, email, programmeEtudes);
+                    }
+                }
+
+                // If not a student, check if they are a professor
+                if (utilisateur == null) {
+                    String sqlProfesseur = "SELECT departement FROM professeurs WHERE id = ?";
+                    try (PreparedStatement pstmtProfesseur = connection.prepareStatement(sqlProfesseur)) {
+                        pstmtProfesseur.setObject(1, id);
+                        ResultSet rsProfesseur = pstmtProfesseur.executeQuery();
+                        if (rsProfesseur.next()) {
+                            String departement = rsProfesseur.getString("departement");
+                            utilisateur = new Professeur(id, nom, email, departement);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return utilisateur;
     }
 }

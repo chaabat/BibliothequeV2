@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class Bibliotheque {
+
     private UtilisateurDAO utilisateurDAO;
     private DocumentDAO documentDAO;
 
@@ -17,10 +18,38 @@ public class Bibliotheque {
         this.documentDAO = documentDAO;
     }
 
+    // User methods
     public void ajouterUtilisateur(Utilisateur utilisateur) {
         utilisateurDAO.ajouterUtilisateur(utilisateur);
     }
 
+    public List<Utilisateur> getAllUtilisateurs() {
+        return utilisateurDAO.getAllUtilisateurs();
+    }
+
+    public Utilisateur rechercherUtilisateurParId(UUID id) {
+        return utilisateurDAO.rechercherUtilisateurParId(id);
+    }
+
+    public Utilisateur rechercherUtilisateurParNom(String nom) {
+        return utilisateurDAO.trouverUtilisateurParNom(nom);
+    }
+
+    public void modifierUtilisateur(Utilisateur utilisateur) {
+        utilisateurDAO.mettreAJourUtilisateur(utilisateur);
+    }
+
+    public boolean supprimerUtilisateur(UUID id) {
+        try {
+            utilisateurDAO.supprimerUtilisateur(id);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Document methods
     public void ajouterDocument(Document document) {
         documentDAO.ajouterDocument(document);
     }
@@ -42,6 +71,7 @@ public class Bibliotheque {
     public boolean reserverDocument(UUID idDocument, UUID idUtilisateur) {
         Document document = documentDAO.rechercherDocumentParId(idDocument);
         Utilisateur utilisateur = utilisateurDAO.rechercherUtilisateurParId(idUtilisateur);
+
         if (document != null && utilisateur != null && document instanceof Reservable) {
             Reservable reservableDoc = (Reservable) document;
             if (!reservableDoc.estReserve()) {
@@ -52,6 +82,8 @@ public class Bibliotheque {
             } else {
                 System.out.println("Le document est déjà réservé.");
             }
+        } else {
+            System.out.println("Le document ou l'utilisateur est invalide ou le document n'est pas réservable.");
         }
         return false;
     }
@@ -65,10 +97,8 @@ public class Bibliotheque {
             return false;
         }
 
-        // Determine if the user is a student or professor
         boolean isStudent = utilisateur instanceof Etudiant;
 
-        // Check if the document is of a type that the user is allowed to borrow
         if (isStudent && !(document instanceof Livre || document instanceof Magazine)) {
             System.out.println("Les étudiants ne peuvent emprunter que des livres ou des magazines.");
             return false;
@@ -87,10 +117,8 @@ public class Bibliotheque {
         } else {
             System.out.println("Ce document n'est pas empruntable.");
         }
-
         return false;
     }
-
 
     public boolean annulerReservationDocument(UUID idDocument) {
         Document document = documentDAO.rechercherDocumentParId(idDocument);
@@ -104,6 +132,8 @@ public class Bibliotheque {
             } else {
                 System.out.println("Le document n'est pas réservé.");
             }
+        } else {
+            System.out.println("Le document est invalide ou n'est pas réservable.");
         }
         return false;
     }
@@ -116,13 +146,13 @@ public class Bibliotheque {
             documentDAO.mettreAJourDocument(document);
             System.out.println("Le document a été retourné.");
             return true;
+        } else {
+            System.out.println("Le document est invalide ou n'est pas empruntable.");
         }
         return false;
     }
 
     public List<Document> rechercherDocumentParTitre(String titre) {
-        return documentDAO.rechercherDocumentParTitre(titre); // Utilisation de l'instance de documentDAO
+        return documentDAO.rechercherDocumentParTitre(titre);
     }
-
-
 }
