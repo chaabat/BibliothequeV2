@@ -1,6 +1,7 @@
 package com.bibliotheque.presentation;
 
 import com.bibliotheque.dao.DocumentDAO;
+import com.bibliotheque.dao.Interface.DocumentDAOInterface;
 import com.bibliotheque.metier.*;
 import com.bibliotheque.utilitaire.InputValidator;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 public class ConsoleUI {
     private Bibliotheque bibliotheque;
     private Scanner scanner;
+    private DocumentDAOInterface documentDAO;
 
     public ConsoleUI(Bibliotheque bibliotheque) {
         this.bibliotheque = bibliotheque;
@@ -103,13 +105,13 @@ public class ConsoleUI {
 
             switch (choix) {
                 case 1:
-                    emprunterLivreOuMagazine();
+                    emprunterDocument();
                     break;
                 case 2:
                     retournerDocument();
                     break;
                 case 3:
-                    reserverLivreOuMagazine();
+                    reserverDocument();
                     break;
                 case 4:
                     annulerReservation();
@@ -158,16 +160,9 @@ public class ConsoleUI {
         }
     }
 
-    // Student-specific borrowing and reservation
-    private void emprunterLivreOuMagazine() {
-        System.out.println("Emprunt d'un livre ou d'un magazine...");
-        // Logic to allow student to borrow a book or magazine
-    }
 
-    private void reserverLivreOuMagazine() {
-        System.out.println("Réservation d'un livre ou d'un magazine...");
-        // Logic to allow student to reserve a book or magazine
-    }
+
+
 
     // Methods for document management
     private void afficherMenuDocuments() {
@@ -329,7 +324,7 @@ public class ConsoleUI {
                 int numero = scanner.nextInt();
                 scanner.nextLine(); // Consommer la nouvelle ligne
 
-                document = new Magazine(idDocument, titre, auteurMagazine, datePublicationMagazine, nombreDePagesMagazine);
+                document = new Magazine(idDocument, titre, auteurMagazine, datePublicationMagazine, nombreDePagesMagazine, numero);
                 break;
             case 3: // Thèse Universitaire
                 System.out.print("Auteur : ");

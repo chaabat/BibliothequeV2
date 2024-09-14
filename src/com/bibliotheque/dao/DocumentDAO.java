@@ -13,6 +13,7 @@ import java.util.UUID;
 public class DocumentDAO implements DocumentDAOInterface {
 
     private static Connection connection;
+    private int numero;
 
     public DocumentDAO() {
         try {
@@ -127,7 +128,7 @@ public class DocumentDAO implements DocumentDAOInterface {
                 if (rs.getString("ISBN") != null) {
                     document = new Livre(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("ISBN"));
                 } else if (rs.getInt("numero") != 0) {
-                    document = new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages);
+                    document = new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages,numero);
                 } else if (rs.getString("domaineRecherche") != null) {
                     document = new JournalScientifique(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("domaineRecherche"), rs.getString("editeur"));
                 } else if (rs.getString("universite") != null) {
@@ -279,7 +280,7 @@ public class DocumentDAO implements DocumentDAOInterface {
                         document = new Livre(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("ISBN"));
                     } else if (rs.getObject("numero") != null) {
                         int numero = rs.getInt("numero");
-                        document = new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages);
+                        document = new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages, numero);
                     } else if (rs.getString("domaine_recherche") != null) {
                         document = new JournalScientifique(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("domaine_recherche"), rs.getString("editeur"));
                     } else if (rs.getString("universite") != null) {
@@ -344,7 +345,7 @@ public class DocumentDAO implements DocumentDAOInterface {
                             break;
                         case 2: // Magazine
                             int numero = rs.getInt("numero");
-                            document = new Magazine(id, titreDocument, auteur, datePublication.toLocalDate(), nombrePages);
+                            document = new Magazine(id, titreDocument, auteur, datePublication.toLocalDate(), nombrePages, numero);
                             break;
                         case 3: // Journal Scientifique
                             String domaineRecherche = rs.getString("domaineRecherche");
@@ -430,30 +431,80 @@ public class DocumentDAO implements DocumentDAOInterface {
     public List<Document> rechercherDocumentParTitre(String titre) {
         List<Document> documents = new ArrayList<>();
 
-        String sql = "SELECT * FROM documents WHERE titre LIKE ?";
+        // Queries for each document type
+        String sqlLivre = "SELECT * FROM livres WHERE titre ILIKE ?";
+        String sqlMagazine = "SELECT * FROM magazines WHERE titre ILIKE ?";
+        String sqlJournal = "SELECT * FROM journauxScientifiques WHERE titre ILIKE ?";
+        String sqlThese = "SELECT * FROM theseUniversitaires WHERE titre ILIKE ?";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, "%" + titre + "%");
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                UUID id = UUID.fromString(rs.getString("id"));
-                String titreDocument = rs.getString("titre");
-                String auteur = rs.getString("auteur");
-                String type = rs.getString("type");
-
-                // Extraire les champs supplémentaires
-                LocalDate datePublication = rs.getDate("date_publication").toLocalDate();
-                int nombreDePages = rs.getInt("nombre_de_pages");
-                int numero = rs.getInt("numero_magazine");  // Assurez-vous que ce champ est bien dans la table
-                String universite = rs.getString("universite");
-                String domaineEtude = rs.getString("domaine_etude");
-                int anneeSoumission = rs.getInt("annee_soumission");
-
-                // Créer le document selon son type
-                Document document = creerDocumentSelonType(id, titreDocument, auteur, type, datePublication, nombreDePages, universite, domaineEtude, anneeSoumission, numero);
-                documents.add(document);
+        try {
+            // Query Livres
+            try (PreparedStatement stmt = connection.prepareStatement(sqlLivre)) {
+                stmt.setString(1, "%" + titre + "%");
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    UUID id = UUID.fromString(rs.getString("id"));
+                    String titreDocument = rs.getString("titre");
+                    String auteur = rs.getString("auteur");
+                    LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
+                    int nombreDePages = rs.getInt("nombrePages");
+                    String ISBN = rs.getString("ISBN");
+                    Document document = new Livre(id, titreDocument, auteur, datePublication, nombreDePages, ISBN);
+                    documents.add(document);
+                }
             }
+
+            // Query Magazines
+            try (PreparedStatement stmt = connection.prepareStatement(sqlMagazine)) {
+                stmt.setString(1, "%" + titre + "%");
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    UUID id = UUID.fromString(rs.getString("id"));
+                    String titreDocument = rs.getString("titre");
+                    String auteur = rs.getString("auteur");
+                    LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
+                    int nombreDePages = rs.getInt("nombrePages");
+                    int numero = rs.getInt("numero");
+                    Document document = new Magazine(id, titreDocument, auteur, datePublication, nombreDePages, numero);
+                    documents.add(document);
+                }
+            }
+
+            // Query Journaux Scientifiques
+            try (PreparedStatement stmt = connection.prepareStatement(sqlJournal)) {
+                stmt.setString(1, "%" + titre + "%");
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    UUID id = UUID.fromString(rs.getString("id"));
+                    String titreDocument = rs.getString("titre");
+                    String auteur = rs.getString("auteur");
+                    LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
+                    int nombreDePages = rs.getInt("nombrePages");
+                    String domaineRecherche = rs.getString("domaineRecherche");
+                    String editeur = rs.getString("editeur");
+                    Document document = new JournalScientifique(id, titreDocument, auteur, datePublication, nombreDePages, domaineRecherche, editeur);
+                    documents.add(document);
+                }
+            }
+
+            // Query Thèses Universitaires
+            try (PreparedStatement stmt = connection.prepareStatement(sqlThese)) {
+                stmt.setString(1, "%" + titre + "%");
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    UUID id = UUID.fromString(rs.getString("id"));
+                    String titreDocument = rs.getString("titre");
+                    String auteur = rs.getString("auteur");
+                    LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
+                    int nombreDePages = rs.getInt("nombrePages");
+                    String universite = rs.getString("universite");
+                    String domaineEtude = rs.getString("domaineEtude");
+                    int anneeSoumission = rs.getInt("anneeSoumission");
+                    Document document = new TheseUniversitaire(id, titreDocument, auteur, datePublication, nombreDePages, universite, domaineEtude, anneeSoumission);
+                    documents.add(document);
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -463,21 +514,6 @@ public class DocumentDAO implements DocumentDAOInterface {
 
 
 
-
-    private Document creerDocumentSelonType(UUID id, String titre, String auteur, String type, LocalDate datePublication, int nombreDePages, String universite, String domaineEtude, int anneeSoumission, int numero) {
-        switch (type.toLowerCase()) {
-            case "livre":
-                return new Livre(id, titre, auteur, datePublication, nombreDePages);
-            case "magazine":
-                return new Magazine(id, titre, auteur, datePublication, nombreDePages);
-            case "journal":
-                return new JournalScientifique(id, titre, auteur, datePublication, nombreDePages);
-            case "these":
-                return new TheseUniversitaire(id, titre, auteur, datePublication, nombreDePages, universite, domaineEtude, anneeSoumission);
-            default:
-                throw new IllegalArgumentException("Type de document inconnu : " + type);
-        }
-    }
 
 
 

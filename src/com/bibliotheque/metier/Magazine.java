@@ -7,9 +7,9 @@ public class Magazine extends Document {
     private int numero;
 
     // Constructor with numero
-    public Magazine(UUID id, String titre, String auteur, LocalDate datePublication, int nombreDePages) {
+    public Magazine(UUID id, String titre, String auteur, LocalDate datePublication, int nombreDePages, int numero) {
         super(id, titre, auteur, datePublication, nombreDePages);
-        this.numero = numero; // Correct initialization
+        this.numero = numero; // Correctly initialize numero
     }
 
     // Getter for numero

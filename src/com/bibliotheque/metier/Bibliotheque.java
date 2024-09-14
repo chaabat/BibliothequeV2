@@ -59,7 +59,22 @@ public class Bibliotheque {
     public boolean emprunterDocument(UUID idDocument, UUID idUtilisateur) {
         Document document = documentDAO.rechercherDocumentParId(idDocument);
         Utilisateur utilisateur = utilisateurDAO.rechercherUtilisateurParId(idUtilisateur);
-        if (document != null && utilisateur != null && document instanceof Empruntable) {
+
+        if (document == null || utilisateur == null) {
+            System.out.println("Document ou utilisateur non trouvé.");
+            return false;
+        }
+
+        // Determine if the user is a student or professor
+        boolean isStudent = utilisateur instanceof Etudiant;
+
+        // Check if the document is of a type that the user is allowed to borrow
+        if (isStudent && !(document instanceof Livre || document instanceof Magazine)) {
+            System.out.println("Les étudiants ne peuvent emprunter que des livres ou des magazines.");
+            return false;
+        }
+
+        if (document instanceof Empruntable) {
             Empruntable empruntableDoc = (Empruntable) document;
             if (empruntableDoc.estDisponible()) {
                 empruntableDoc.emprunter(utilisateur);
@@ -69,9 +84,13 @@ public class Bibliotheque {
             } else {
                 System.out.println("Le document n'est pas disponible.");
             }
+        } else {
+            System.out.println("Ce document n'est pas empruntable.");
         }
+
         return false;
     }
+
 
     public boolean annulerReservationDocument(UUID idDocument) {
         Document document = documentDAO.rechercherDocumentParId(idDocument);
