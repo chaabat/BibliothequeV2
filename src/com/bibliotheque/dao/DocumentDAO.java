@@ -205,7 +205,7 @@ public class DocumentDAO implements DocumentDAOInterface {
                     pstmt.setObject(8, journal.getReservePar() != null ? journal.getReservePar() : null);
                     pstmt.setObject(9, journal.getId());
                     pstmt.executeUpdate();
-                    connection.commit(); // Commit the transaction
+                    connection.commit();
                     System.out.println("Document mis à jour avec succès.");
                 }
             } else if (document instanceof TheseUniversitaire) {

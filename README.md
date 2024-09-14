@@ -3,7 +3,7 @@
 
 ## Vue d'ensemble
 
-Ce projet est une application de gestion de bibliothèque municipale développée en Java. L'application permet de gérer l'inventaire des livres et des magazines, ainsi que les opérations d'emprunt et de retour. Elle suit une architecture en couches (présentation, logique métier, persistance) et utilise PostgreSQL pour la persistance des données. Le projet intègre également des énumérations (enum) pour la gestion des types de documents (livres, magazines, journaux scientifiques, thèses universitaires).
+Ce projet est une application de gestion de bibliothèque municipale développée en Java. L'application permet de gérer l'inventaire des livres et des magazines, ainsi que les opérations d'emprunt et de retour. Elle suit une architecture en couches (présentation, metier, utilitaire ; dao) et utilise PostgreSQL pour la persistance des données. Le projet intègre   documents (livres, magazines, journaux scientifiques, thèses universitaires).
 
 ## Fonctionnalités
 
