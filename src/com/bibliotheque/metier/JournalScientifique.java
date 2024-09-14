@@ -1,6 +1,5 @@
 package com.bibliotheque.metier;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.UUID;
 

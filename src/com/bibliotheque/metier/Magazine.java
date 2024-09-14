@@ -1,18 +1,15 @@
 package com.bibliotheque.metier;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.UUID;
 
 public class Magazine extends Document {
     private int numero;
 
-
-
     // Constructor with numero
     public Magazine(UUID id, String titre, String auteur, LocalDate datePublication, int nombreDePages) {
         super(id, titre, auteur, datePublication, nombreDePages);
-        this.numero = numero;
+        this.numero = numero; // Correct initialization
     }
 
     // Getter for numero

@@ -102,6 +102,8 @@ public class Bibliotheque {
     }
 
     public List<Document> rechercherDocumentParTitre(String titre) {
-        return documentDAO.rechercherDocumentParTitre(titre);
+        return documentDAO.rechercherDocumentParTitre(titre); // Utilisation de l'instance de documentDAO
     }
+
+
 }

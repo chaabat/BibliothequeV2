@@ -10,7 +10,9 @@ public interface DocumentDAOInterface {
     void mettreAJourDocument(Document document);
     boolean supprimerDocument(UUID id);
     Document rechercherDocumentParId(UUID id);
+
     Document rechercherDocumentParTitreEtType(String titreDocument, int typeDocument);
+
     boolean supprimerDocumentParTitreEtType(String titreDocument, int typeDocument);
     List<Document> rechercherDocumentParTitre(String titre);
 
