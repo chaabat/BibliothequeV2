@@ -18,12 +18,14 @@ public class Livre extends Document {
         this.isbn = isbn;
     }
 
-
-
-
     // Getter for ISBN
     public String getIsbn() {
         return isbn;
+    }
+
+    // Setter for ISBN
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 
     @Override
@@ -31,7 +33,11 @@ public class Livre extends Document {
         return "Livre";
     }
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
+    @Override
+    public String toString() {
+        return String.format(
+                "ID: %s\nTitre: %s\nAuteur: %s\nDate de Publication: %s\nNombre de Pages: %d\nISBN: %s\n",
+                getId(), getTitre(), getAuteur(), getDatePublication(), getNombreDePages(), isbn
+        );
     }
 }

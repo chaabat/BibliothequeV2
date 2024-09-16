@@ -1,5 +1,6 @@
 package com.bibliotheque.metier;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -22,10 +23,16 @@ public class Document {
     }
 
     // Constructor with automatic UUID generation (optional use case)
-    public Document(String titre, String auteur, LocalDate datePublication, int nombreDePages) {
-        this(UUID.randomUUID(), titre, auteur, datePublication, nombreDePages);
+
+
+    public Document(UUID id, String titre, String auteur, Date datePublication, int nombrePages, String universite, String domaineEtude, int numero, UUID empruntePar, UUID reservePar) {
+
+
     }
 
+    public Document(UUID id, String titre, String auteur, Date datePublication, int nombrePages, String domaineRecherche, String editeur, UUID empruntePar, UUID reservePar) {
+
+    }
 
 
     // Getters and setters

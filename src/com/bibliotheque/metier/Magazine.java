@@ -9,7 +9,7 @@ public class Magazine extends Document {
     // Constructor with numero
     public Magazine(UUID id, String titre, String auteur, LocalDate datePublication, int nombreDePages, int numero) {
         super(id, titre, auteur, datePublication, nombreDePages);
-        this.numero = numero; // Correctly initialize numero
+        this.numero = numero;
     }
 
     // Getter for numero
@@ -25,5 +25,13 @@ public class Magazine extends Document {
     @Override
     public String getType() {
         return "Magazine";
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "ID: %s\nTitre: %s\nAuteur: %s\nDate de Publication: %s\nNombre de Pages: %d\nNuméro: %d\n",
+                getId(), getTitre(), getAuteur(), getDatePublication(), getNombreDePages(), numero
+        );
     }
 }

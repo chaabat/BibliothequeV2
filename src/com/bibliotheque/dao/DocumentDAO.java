@@ -149,10 +149,6 @@ public class DocumentDAO implements DocumentDAOInterface {
     }
 
 
-
-
-
-
     @Override
     public void mettreAJourDocument(Document document) {
         String sql = null;
@@ -258,49 +254,62 @@ public class DocumentDAO implements DocumentDAOInterface {
     }
 
     @Override
-    public Document rechercherDocumentParId(UUID id) {
-        String sql = "SELECT * FROM documents " +
-                "LEFT JOIN livres ON documents.id = livres.id " +
-                "LEFT JOIN magazines ON documents.id = magazines.id " +
-                "LEFT JOIN journauxScientifiques ON documents.id = journauxScientifiques.id " +
-                "LEFT JOIN theseUniversitaires ON documents.id = theseUniversitaires.id " +
-                "WHERE documents.id = ?";
-        Document document = null;
+    public Document rechercherDocumentParId(UUID documentId) {
+        String sql = "SELECT d.id, d.titre, d.auteur, d.datePublication, d.nombrePages, d.empruntePar, d.reservePar, " +
+                "l.ISBN, m.numero, j.domaineRecherche, j.editeur, t.universite, t.domaineEtude, t.anneeSoumission " +
+                "FROM documents d " +
+                "LEFT JOIN livres l ON d.id = l.id " +
+                "LEFT JOIN magazines m ON d.id = m.id " +
+                "LEFT JOIN journauxScientifiques j ON d.id = j.id " +
+                "LEFT JOIN theseUniversitaires t ON d.id = t.id " +
+                "WHERE d.id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setObject(1, id);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    String titre = rs.getString("titre");
-                    String auteur = rs.getString("auteur");
-                    Date datePublication = rs.getDate("date_publication");
-                    int nombrePages = rs.getInt("nombre_de_pages");
-                    UUID empruntePar = rs.getObject("empruntePar") != null ? (UUID) rs.getObject("empruntePar") : null;
-                    UUID reservePar = rs.getObject("reservePar") != null ? (UUID) rs.getObject("reservePar") : null;
-
-                    if (rs.getString("ISBN") != null) {
-                        document = new Livre(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("ISBN"));
-                    } else if (rs.getObject("numero") != null) {
-                        int numero = rs.getInt("numero");
-                        document = new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages, numero);
-                    } else if (rs.getString("domaine_recherche") != null) {
-                        document = new JournalScientifique(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("domaine_recherche"), rs.getString("editeur"));
-                    } else if (rs.getString("universite") != null) {
-                        document = new TheseUniversitaire(id, titre, auteur, datePublication.toLocalDate(), nombrePages, rs.getString("universite"), rs.getString("domaine_etude"), rs.getInt("annee_soumission"));
-                    }
-
-                    if (document != null) {
-                        document.setEmpruntePar(empruntePar);
-                        document.setReservePar(reservePar);
-                    }
-                }
+            pstmt.setObject(1, documentId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return createDocumentFromResultSet(rs);  // Updated method below
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Consider using a logger
+            e.printStackTrace();
+        }
+        return null;
+    }
+    private Document createDocumentFromResultSet(ResultSet rs) throws SQLException {
+        UUID id = UUID.fromString(rs.getString("id"));
+        String titre = rs.getString("titre");
+        String auteur = rs.getString("auteur");
+        Date datePublication = rs.getDate("datePublication");  // Corrected column name
+        int nombrePages = rs.getInt("nombrePages");
+
+        // Retrieve specific document attributes
+        String isbn = rs.getString("ISBN");
+        if (isbn != null) {
+            return new Livre(id, titre, auteur, datePublication.toLocalDate(), nombrePages, isbn);
         }
 
-        return document;
+        int numero = rs.getInt("numero");
+        if (!rs.wasNull()) {
+            return new Magazine(id, titre, auteur, datePublication.toLocalDate(), nombrePages, numero);
+        }
+
+        String domaineRecherche = rs.getString("domaineRecherche");
+        String editeur = rs.getString("editeur");
+        if (domaineRecherche != null && editeur != null) {
+            return new JournalScientifique(id, titre, auteur, datePublication.toLocalDate(), nombrePages, domaineRecherche, editeur);
+        }
+
+        String universite = rs.getString("universite");
+        String domaineEtude = rs.getString("domaineEtude");
+        int anneeSoumission = rs.getInt("anneeSoumission");
+        if (universite != null && domaineEtude != null) {
+            return new TheseUniversitaire(id, titre, auteur, datePublication.toLocalDate(), nombrePages, universite, domaineEtude, anneeSoumission);
+        }
+
+        return null;  // Default return in case no specific document type is matched
     }
+
+
 
 
     @Override
@@ -441,72 +450,13 @@ public class DocumentDAO implements DocumentDAOInterface {
 
         try {
             // Query Livres
-            try (PreparedStatement stmt = connection.prepareStatement(sqlLivre)) {
-                stmt.setString(1, "%" + titre + "%");
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    UUID id = UUID.fromString(rs.getString("id"));
-                    String titreDocument = rs.getString("titre");
-                    String auteur = rs.getString("auteur");
-                    LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
-                    int nombreDePages = rs.getInt("nombrePages");
-                    String ISBN = rs.getString("ISBN");
-                    Document document = new Livre(id, titreDocument, auteur, datePublication, nombreDePages, ISBN);
-                    documents.add(document);
-                }
-            }
-
+            documents.addAll(rechercherLivresParTitre(titre, sqlLivre));
             // Query Magazines
-            try (PreparedStatement stmt = connection.prepareStatement(sqlMagazine)) {
-                stmt.setString(1, "%" + titre + "%");
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    UUID id = UUID.fromString(rs.getString("id"));
-                    String titreDocument = rs.getString("titre");
-                    String auteur = rs.getString("auteur");
-                    LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
-                    int nombreDePages = rs.getInt("nombrePages");
-                    int numero = rs.getInt("numero");
-                    Document document = new Magazine(id, titreDocument, auteur, datePublication, nombreDePages, numero);
-                    documents.add(document);
-                }
-            }
-
+            documents.addAll(rechercherMagazinesParTitre(titre, sqlMagazine));
             // Query Journaux Scientifiques
-            try (PreparedStatement stmt = connection.prepareStatement(sqlJournal)) {
-                stmt.setString(1, "%" + titre + "%");
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    UUID id = UUID.fromString(rs.getString("id"));
-                    String titreDocument = rs.getString("titre");
-                    String auteur = rs.getString("auteur");
-                    LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
-                    int nombreDePages = rs.getInt("nombrePages");
-                    String domaineRecherche = rs.getString("domaineRecherche");
-                    String editeur = rs.getString("editeur");
-                    Document document = new JournalScientifique(id, titreDocument, auteur, datePublication, nombreDePages, domaineRecherche, editeur);
-                    documents.add(document);
-                }
-            }
-
+            documents.addAll(rechercherJournauxParTitre(titre, sqlJournal));
             // Query Thèses Universitaires
-            try (PreparedStatement stmt = connection.prepareStatement(sqlThese)) {
-                stmt.setString(1, "%" + titre + "%");
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    UUID id = UUID.fromString(rs.getString("id"));
-                    String titreDocument = rs.getString("titre");
-                    String auteur = rs.getString("auteur");
-                    LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
-                    int nombreDePages = rs.getInt("nombrePages");
-                    String universite = rs.getString("universite");
-                    String domaineEtude = rs.getString("domaineEtude");
-                    int anneeSoumission = rs.getInt("anneeSoumission");
-                    Document document = new TheseUniversitaire(id, titreDocument, auteur, datePublication, nombreDePages, universite, domaineEtude, anneeSoumission);
-                    documents.add(document);
-                }
-            }
-
+            documents.addAll(rechercherThesesParTitre(titre, sqlThese));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -514,13 +464,132 @@ public class DocumentDAO implements DocumentDAOInterface {
         return documents.isEmpty() ? Collections.emptyList() : documents;
     }
 
+    private List<Livre> rechercherLivresParTitre(String titre, String sql) throws SQLException {
+        List<Livre> livres = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, "%" + titre + "%");
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                UUID id = UUID.fromString(rs.getString("id"));
+                String titreDocument = rs.getString("titre");
+                String auteur = rs.getString("auteur");
+                LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
+                int nombreDePages = rs.getInt("nombrePages");
+                String ISBN = rs.getString("ISBN");
+                Livre livre = new Livre(id, titreDocument, auteur, datePublication, nombreDePages, ISBN);
+                livres.add(livre);
+            }
+        }
+        return livres;
+    }
 
+    private List<Magazine> rechercherMagazinesParTitre(String titre, String sql) throws SQLException {
+        List<Magazine> magazines = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, "%" + titre + "%");
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                UUID id = UUID.fromString(rs.getString("id"));
+                String titreDocument = rs.getString("titre");
+                String auteur = rs.getString("auteur");
+                LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
+                int nombreDePages = rs.getInt("nombrePages");
+                int numero = rs.getInt("numero");
+                Magazine magazine = new Magazine(id, titreDocument, auteur, datePublication, nombreDePages, numero);
+                magazines.add(magazine);
+            }
+        }
+        return magazines;
+    }
 
+    private List<JournalScientifique> rechercherJournauxParTitre(String titre, String sql) throws SQLException {
+        List<JournalScientifique> journaux = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, "%" + titre + "%");
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                UUID id = UUID.fromString(rs.getString("id"));
+                String titreDocument = rs.getString("titre");
+                String auteur = rs.getString("auteur");
+                LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
+                int nombreDePages = rs.getInt("nombrePages");
+                String domaineRecherche = rs.getString("domaineRecherche");
+                String editeur = rs.getString("editeur");
+                JournalScientifique journal = new JournalScientifique(id, titreDocument, auteur, datePublication, nombreDePages, domaineRecherche, editeur);
+                journaux.add(journal);
+            }
+        }
+        return journaux;
+    }
+
+    private List<TheseUniversitaire> rechercherThesesParTitre(String titre, String sql) throws SQLException {
+        List<TheseUniversitaire> theses = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, "%" + titre + "%");
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                UUID id = UUID.fromString(rs.getString("id"));
+                String titreDocument = rs.getString("titre");
+                String auteur = rs.getString("auteur");
+                LocalDate datePublication = rs.getDate("datePublication").toLocalDate();
+                int nombreDePages = rs.getInt("nombrePages");
+                String universite = rs.getString("universite");
+                String domaineEtude = rs.getString("domaineEtude");
+                int anneeSoumission = rs.getInt("anneeSoumission");
+                TheseUniversitaire these = new TheseUniversitaire(id, titreDocument, auteur, datePublication, nombreDePages, universite, domaineEtude, anneeSoumission);
+                theses.add(these);
+            }
+        }
+        return theses;
+    }
 
 
 
     // Emprunter un document
-        public void emprunterDocument(UUID documentId, UUID utilisateurId) {
+    public boolean emprunterDocument(UUID documentId, UUID utilisateurId) {
+        String userTypeSql = "SELECT type, COUNT(*) as empruntsActuels FROM utilisateurs u " +
+                "LEFT JOIN documents d ON u.id = d.empruntePar WHERE u.id = ?";
+        String documentTypeSql = "SELECT type FROM documents WHERE id = ?";
+
+        try (PreparedStatement userStmt = connection.prepareStatement(userTypeSql);
+             PreparedStatement docStmt = connection.prepareStatement(documentTypeSql)) {
+
+            // Get user type and current borrowed documents count
+            userStmt.setObject(1, utilisateurId);
+            ResultSet userRs = userStmt.executeQuery();
+
+            if (userRs.next()) {
+                String userType = userRs.getString("type");
+                int empruntsActuels = userRs.getInt("empruntsActuels");
+
+                // Get document type
+                docStmt.setObject(1, documentId);
+                ResultSet docRs = docStmt.executeQuery();
+
+                if (docRs.next()) {
+                    String documentType = docRs.getString("type");
+
+                    // Etudiants can only borrow Livres and Magazines with a limit of 5
+                    if ("etudiant".equals(userType) && empruntsActuels >= 5) {
+                        System.out.println("L'étudiant a atteint la limite d'emprunts.");
+                        return false;
+                    }
+
+                    if ("etudiant".equals(userType) &&
+                            !("livre".equals(documentType) || "magazine".equals(documentType))) {
+                        System.out.println("Les étudiants ne peuvent emprunter que des livres et des magazines.");
+                        return false;
+                    }
+                } else {
+                    System.out.println("Document non trouvé.");
+                    return false;
+                }
+            } else {
+                System.out.println("Utilisateur non trouvé.");
+                return false;
+            }
+
+            // If checks pass, proceed with borrowing the document
             String sql = "UPDATE documents SET empruntePar = ? WHERE id = ? AND empruntePar IS NULL";
             try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                 pstmt.setObject(1, utilisateurId);
@@ -530,51 +599,87 @@ public class DocumentDAO implements DocumentDAOInterface {
                 if (rowsUpdated > 0) {
                     connection.commit();
                     System.out.println("Document emprunté avec succès.");
+                    return true;
                 } else {
                     System.out.println("Ce document est déjà emprunté ou n'existe pas.");
+                    return false;
                 }
-            } catch (SQLException e) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
-                e.printStackTrace();
             }
+
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            e.printStackTrace();
+            return false;
         }
+    }
+
 
 
 
 
     // Retourner un document
-        public void retournerDocument(UUID documentId) {
-            String sql = "UPDATE documents SET empruntePar = NULL WHERE id = ?";
-            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-                pstmt.setObject(1, documentId);
+    public boolean retournerDocument(UUID documentId) {
+        String reservationSql = "SELECT reservePar FROM reservations WHERE documentId = ? ORDER BY dateReservation ASC LIMIT 1";
+        String updateDocumentSql = "UPDATE documents SET empruntePar = NULL WHERE id = ?";
+        String updateReservationSql = "DELETE FROM reservations WHERE documentId = ? AND reservePar = ?";
 
-                int rowsUpdated = pstmt.executeUpdate();
-                if (rowsUpdated > 0) {
-                    connection.commit();
-                    System.out.println("Document retourné avec succès.");
-                } else {
-                    System.out.println("Ce document n'a pas été emprunté ou n'existe pas.");
+        try (PreparedStatement pstmt = connection.prepareStatement(updateDocumentSql);
+             PreparedStatement reservationStmt = connection.prepareStatement(reservationSql)) {
+
+            pstmt.setObject(1, documentId);
+
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                connection.commit();
+                System.out.println("Document retourné avec succès.");
+
+                // Check for any existing reservations
+                reservationStmt.setObject(1, documentId);
+                ResultSet reservationRs = reservationStmt.executeQuery();
+
+                if (reservationRs.next()) {
+                    UUID reservePar = (UUID) reservationRs.getObject("reservePar");
+
+                    // Automatically assign the document to the user who reserved it
+                    String assignDocumentSql = "UPDATE documents SET empruntePar = ? WHERE id = ? AND empruntePar IS NULL";
+                    try (PreparedStatement assignStmt = connection.prepareStatement(assignDocumentSql)) {
+                        assignStmt.setObject(1, reservePar);
+                        assignStmt.setObject(2, documentId);
+                        assignStmt.executeUpdate();
+
+                        // Remove the reservation once the document is borrowed
+                        try (PreparedStatement deleteReservationStmt = connection.prepareStatement(updateReservationSql)) {
+                            deleteReservationStmt.setObject(1, documentId);
+                            deleteReservationStmt.setObject(2, reservePar);
+                            deleteReservationStmt.executeUpdate();
+                        }
+
+                        connection.commit();
+                        System.out.println("Le document a été automatiquement emprunté par l'utilisateur qui l'a réservé.");
+                    }
                 }
-            } catch (SQLException e) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackEx) {
-                    rollbackEx.printStackTrace();
-                }
-                e.printStackTrace();
+
+                return true;
+            } else {
+                System.out.println("Ce document n'a pas été emprunté ou n'existe pas.");
+                return false;
             }
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            e.printStackTrace();
+            return false;
         }
-
-
-
-
+    }
 
 
 
 }
-
 

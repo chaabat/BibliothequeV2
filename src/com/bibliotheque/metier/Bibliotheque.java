@@ -146,21 +146,10 @@ public class Bibliotheque {
         return false;
     }
 
-    public boolean retournerDocument(UUID idDocument) {
-        Document document = documentDAO.rechercherDocumentParId(idDocument);
-        if (document != null && document instanceof Empruntable) {
-            Empruntable empruntableDoc = (Empruntable) document;
-            empruntableDoc.retourner();
-            documentDAO.mettreAJourDocument(document);
-            System.out.println("Le document a été retourné.");
-            return true;
-        } else {
-            System.out.println("Le document est invalide ou n'est pas empruntable.");
-        }
-        return false;
+
+
+    public List<Document> rechercherDocumentParTitre(String titre) {
+        return documentDAO.rechercherDocumentParTitre(titre); // Return the list directly
     }
 
-    public Document rechercherDocumentParTitre(String titre) {
-        return (Document) documentDAO.rechercherDocumentParTitre(titre);
-    }
 }

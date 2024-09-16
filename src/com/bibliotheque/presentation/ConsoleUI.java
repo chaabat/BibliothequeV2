@@ -7,6 +7,7 @@ import com.bibliotheque.utilitaire.InputValidator;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
@@ -1085,27 +1086,38 @@ public class ConsoleUI {
         }
     }
 
-
-
-
-
-
     private void emprunterDocument() {
         System.out.println("\n=== Emprunter un Document ===");
         System.out.print("Titre du document : ");
         String titreDocument = scanner.nextLine();
 
-        System.out.print("Nom de l'utilisateur : ");
-        String nomUtilisateur = scanner.nextLine();
-
-        // Rechercher le document par titre dans la bibliothèque
-        Document document = bibliotheque.rechercherDocumentParTitre(titreDocument);
-        if (document == null) {
-            System.out.println("Document non trouvé.");
+        // Rechercher le document par titre
+        List<Document> documents = (List<Document>) bibliotheque.rechercherDocumentParTitre(titreDocument);
+        if (documents.isEmpty()) {
+            System.out.println("Aucun document trouvé avec ce titre.");
             return;
         }
 
-        // Rechercher l'utilisateur par nom dans la bibliothèque
+        // Afficher les documents trouvés
+        for (int i = 0; i < documents.size(); i++) {
+            System.out.println((i + 1) + ". " + documents.get(i));  // Affiche le numéro et le document
+        }
+
+        System.out.print("Sélectionner le numéro du document à emprunter : ");
+        int numeroDocument = scanner.nextInt();
+        scanner.nextLine();  // Consume newline
+
+        if (numeroDocument < 1 || numeroDocument > documents.size()) {
+            System.out.println("Numéro de document invalide.");
+            return;
+        }
+
+        Document document = documents.get(numeroDocument - 1);  // Sélectionner le document basé sur le numéro
+
+        System.out.print("Nom de l'utilisateur : ");
+        String nomUtilisateur = scanner.nextLine();
+
+        // Rechercher l'utilisateur par nom
         Utilisateur utilisateur = bibliotheque.rechercherUtilisateurParNom(nomUtilisateur);
         if (utilisateur == null) {
             System.out.println("Utilisateur non trouvé.");
@@ -1116,29 +1128,36 @@ public class ConsoleUI {
         if (bibliotheque.emprunterDocument(document.getId(), utilisateur.getId())) {
             System.out.println("Document emprunté avec succès.");
         } else {
-            System.out.println("L'emprunt du document a échoué.");
+            System.out.println("L'emprunt du document a échoué. Vérifiez les règles d'emprunt ou si le document est déjà emprunté.");
         }
     }
+
+
+
+
 
     private void retournerDocument() {
         System.out.println("\n=== Retourner un Document ===");
         System.out.print("Titre du document : ");
         String titreDocument = scanner.nextLine();
 
-        // Rechercher le document par titre dans la bibliothèque
-        Document document = bibliotheque.rechercherDocumentParTitre(titreDocument);
-        if (document == null) {
-            System.out.println("Document non trouvé.");
+        // Rechercher les documents par titre dans la bibliothèque
+        List<Document> documents = (List<Document>) bibliotheque.rechercherDocumentParTitre(titreDocument);
+        if (documents.isEmpty()) {
+            System.out.println("Aucun document trouvé avec ce titre.");
             return;
         }
 
-        // Retourner le document
-        if (bibliotheque.retournerDocument(document.getId())) {
+        Document document = documents.get(0);  // Sélectionner le premier document si plusieurs existent
+
+        // Retourner le document et vérifier les réservations
+        if (bibliotheque.annulerReservationDocument(document.getId())) {
             System.out.println("Document retourné avec succès.");
         } else {
             System.out.println("Le retour du document a échoué.");
         }
     }
+
 
 
     private void reserverDocument() {
@@ -1150,11 +1169,28 @@ public class ConsoleUI {
         String nomUtilisateur = scanner.nextLine();
 
         // Rechercher le document par titre dans la bibliothèque
-        Document document = bibliotheque.rechercherDocumentParTitre(titreDocument);
-        if (document == null) {
-            System.out.println("Document non trouvé.");
+        List<Document> documents = bibliotheque.rechercherDocumentParTitre(titreDocument);
+        if (documents == null || documents.isEmpty()) {
+            System.out.println("Aucun document trouvé avec ce titre.");
             return;
         }
+
+        // Afficher les documents trouvés
+        for (int i = 0; i < documents.size(); i++) {
+            System.out.println((i + 1) + ". " + documents.get(i));
+        }
+
+        System.out.print("Sélectionnez le numéro du document à réserver : ");
+        int numeroDocument = scanner.nextInt();
+        scanner.nextLine();  // Consommer la nouvelle ligne
+
+        if (numeroDocument < 1 || numeroDocument > documents.size()) {
+            System.out.println("Numéro de document invalide.");
+            return;
+        }
+
+        // Sélectionner le document basé sur l'index
+        Document document = documents.get(numeroDocument - 1);
 
         // Rechercher l'utilisateur par nom
         Utilisateur utilisateur = bibliotheque.rechercherUtilisateurParNom(nomUtilisateur);
@@ -1163,6 +1199,7 @@ public class ConsoleUI {
             return;
         }
 
+        // Réserver le document
         if (bibliotheque.reserverDocument(document.getId(), utilisateur.getId())) {
             System.out.println("Document réservé avec succès.");
         } else {
@@ -1177,18 +1214,37 @@ public class ConsoleUI {
         String titreDocument = scanner.nextLine();
 
         // Rechercher le document par titre dans la bibliothèque
-        Document document = bibliotheque.rechercherDocumentParTitre(titreDocument);
-        if (document == null) {
-            System.out.println("Document non trouvé.");
+        List<Document> documents = bibliotheque.rechercherDocumentParTitre(titreDocument);
+        if (documents == null || documents.isEmpty()) {
+            System.out.println("Aucun document trouvé avec ce titre.");
             return;
         }
 
+        // Afficher les documents trouvés
+        for (int i = 0; i < documents.size(); i++) {
+            System.out.println((i + 1) + ". " + documents.get(i));
+        }
+
+        System.out.print("Sélectionnez le numéro du document à annuler la réservation : ");
+        int numeroDocument = scanner.nextInt();
+        scanner.nextLine();  // Consommer la nouvelle ligne
+
+        if (numeroDocument < 1 || numeroDocument > documents.size()) {
+            System.out.println("Numéro de document invalide.");
+            return;
+        }
+
+        // Sélectionner le document basé sur l'index
+        Document document = documents.get(numeroDocument - 1);
+
+        // Annuler la réservation du document
         if (bibliotheque.annulerReservationDocument(document.getId())) {
             System.out.println("Réservation annulée avec succès.");
         } else {
             System.out.println("L'annulation de la réservation a échoué.");
         }
     }
+
 
 
 }

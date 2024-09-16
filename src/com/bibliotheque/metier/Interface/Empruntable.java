@@ -2,8 +2,14 @@ package com.bibliotheque.metier.Interface;
 
 import com.bibliotheque.metier.Utilisateur;
 
+import java.time.LocalDate;
+import java.util.UUID;
+
 public interface Empruntable {
-    void emprunter(Utilisateur utilisateur); // Update to accept Utilisateur
     boolean estDisponible();
+    void emprunter(Utilisateur utilisateur);
     void retourner();
+    UUID getEmpruntePar(); // To return the user who borrowed the document
+    LocalDate getEmpruntDate();
 }
+

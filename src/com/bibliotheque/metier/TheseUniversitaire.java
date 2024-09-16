@@ -15,7 +15,6 @@ public class TheseUniversitaire extends Document {
         this.anneeSoumission = anneeSoumission;
     }
 
-
     @Override
     public String getType() {
         return "TheseUniversitaire";
@@ -44,5 +43,13 @@ public class TheseUniversitaire extends Document {
 
     public void setAnneeSoumission(int anneeSoumission) {
         this.anneeSoumission = anneeSoumission;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "ID: %s\nTitre: %s\nAuteur: %s\nDate de Publication: %s\nNombre de Pages: %d\nUniversité: %s\nDomaine d'Étude: %s\nAnnée de Soumission: %d\n",
+                getId(), getTitre(), getAuteur(), getDatePublication(), getNombreDePages(), universite, domaineEtude, anneeSoumission
+        );
     }
 }

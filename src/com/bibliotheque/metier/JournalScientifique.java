@@ -19,9 +19,6 @@ public class JournalScientifique extends Document {
         this.editeur = editeur;
     }
 
-
-
-
     // Getters and Setters for domaineRecherche and editeur
     public String getDomaineRecherche() {
         return domaineRecherche;
@@ -41,6 +38,14 @@ public class JournalScientifique extends Document {
 
     @Override
     public String getType() {
-        return "JournalScientifique";
+        return "Journal Scientifique";
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "ID: %s\nTitre: %s\nAuteur: %s\nDate de Publication: %s\nNombre de Pages: %d\nDomaine de Recherche: %s\nÉditeur: %s\n",
+                getId(), getTitre(), getAuteur(), getDatePublication(), getNombreDePages(), domaineRecherche, editeur
+        );
     }
 }
