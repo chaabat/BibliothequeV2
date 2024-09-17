@@ -363,6 +363,7 @@ public class ConsoleUI {
 
 
 
+
     private void afficherTousUtilisateurs() {
         List<Utilisateur> utilisateurs = bibliotheque.getAllUtilisateurs();
 
@@ -377,26 +378,18 @@ public class ConsoleUI {
 
     private void rechercherUtilisateur() {
         System.out.println("\n=== Rechercher un Utilisateur ===");
-        System.out.print("Le Nom d'utilisateur ou ID : ");
+        System.out.print("Le Nom d'utilisateur : ");
         String recherche = scanner.nextLine();
 
-        if (InputValidator.isValidUUID(recherche)) {
-            UUID id = UUID.fromString(recherche);
-            Utilisateur utilisateur = bibliotheque.rechercherUtilisateurParId(id);
-            if (utilisateur != null) {
-                System.out.println(utilisateur);
-            } else {
-                System.out.println("Utilisateur non trouvé.");
-            }
+        // Search by name directly
+        Utilisateur utilisateur = bibliotheque.rechercherUtilisateurParNom(recherche);
+        if (utilisateur != null) {
+            System.out.println(utilisateur);
         } else {
-            Utilisateur utilisateur = bibliotheque.rechercherUtilisateurParNom(recherche);
-            if (utilisateur != null) {
-                System.out.println(utilisateur);
-            } else {
-                System.out.println("Utilisateur non trouvé.");
-            }
+            System.out.println("Utilisateur non trouvé.");
         }
     }
+
 
 
     private void modifierUtilisateur() {
@@ -1128,7 +1121,7 @@ public class ConsoleUI {
         if (bibliotheque.emprunterDocument(document.getId(), utilisateur.getId())) {
             System.out.println("Document emprunté avec succès.");
         } else {
-            System.out.println("L'emprunt du document a échoué. Vérifiez les règles d'emprunt ou si le document est déjà emprunté.");
+            System.out.println("L'emprunt du document a échoué. Vérifiez  si le document est déjà emprunté.");
         }
     }
 

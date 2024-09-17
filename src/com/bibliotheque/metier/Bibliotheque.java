@@ -18,7 +18,6 @@ public class Bibliotheque {
         this.documentDAO = documentDAO;
     }
 
-    // User methods
     public void ajouterUtilisateur(Utilisateur utilisateur) {
         utilisateurDAO.ajouterUtilisateur(utilisateur);
     }

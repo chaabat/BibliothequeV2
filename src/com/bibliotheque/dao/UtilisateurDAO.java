@@ -23,7 +23,58 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
         }
     }
 
-    // Helper method to create a Utilisateur object from ResultSet
+    @Override
+    public void ajouterUtilisateur(Utilisateur utilisateur) {
+        String sqlUtilisateur = "INSERT INTO utilisateurs (id, nom, email) VALUES (?, ?, ?)";
+        String sqlEtudiant = "INSERT INTO etudiants (id, programmeEtude, limiteEmprunt) VALUES (?, ?, ?)";
+        String sqlProfesseur = "INSERT INTO professeurs (id, departement) VALUES (?, ?)";
+
+        try {
+            // Insert into the utilisateurs table
+            try (PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
+                pstmtUtilisateur.setObject(1, utilisateur.getId());
+                pstmtUtilisateur.setString(2, utilisateur.getNom());
+                pstmtUtilisateur.setString(3, utilisateur.getEmail());
+                pstmtUtilisateur.executeUpdate();
+            }
+
+            // Insert into the child table based on user type
+            if (utilisateur instanceof Etudiant) {
+                Etudiant etudiant = (Etudiant) utilisateur;
+                try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
+                    pstmtEtudiant.setObject(1, etudiant.getId());
+                    pstmtEtudiant.setString(2, etudiant.getProgrammeEtudes());
+                    pstmtEtudiant.setInt(3, etudiant.getLimiteEmprunt());
+                    pstmtEtudiant.executeUpdate();
+                }
+            } else if (utilisateur instanceof Professeur) {
+                Professeur professeur = (Professeur) utilisateur;
+                try (PreparedStatement pstmtProfesseur = connection.prepareStatement(sqlProfesseur)) {
+                    pstmtProfesseur.setObject(1, professeur.getId());
+                    pstmtProfesseur.setString(2, professeur.getDepartement());
+                    pstmtProfesseur.executeUpdate();
+                }
+            }
+
+            // Commit transaction
+            connection.commit();
+            System.out.println("Utilisateur ajouté avec succès.");
+        } catch (SQLException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
     private Utilisateur createUtilisateurFromResultSet(ResultSet rs) throws SQLException {
         UUID id = UUID.fromString(rs.getString("id"));
         String nom = rs.getString("nom");
@@ -38,10 +89,8 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
             // This means the user is a professor
             return new Professeur(id, nom, email, departement);
         }
-        return null; // Should not happen if the database is consistent
+        return null;
     }
-
-
 
     @Override
     public Utilisateur rechercherUtilisateurParId(UUID utilisateurId) {
@@ -59,45 +108,6 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
             e.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    public void ajouterUtilisateur(Utilisateur utilisateur) {
-        String sqlUtilisateur = "INSERT INTO utilisateurs (id, nom, email) VALUES (?, ?, ?)";
-        String sqlEtudiant = "INSERT INTO etudiants (id, programmeEtude) VALUES (?, ?)";
-        String sqlProfesseur = "INSERT INTO professeurs (id, departement) VALUES (?, ?)";
-
-        try (PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
-            pstmtUtilisateur.setObject(1, utilisateur.getId());
-            pstmtUtilisateur.setString(2, utilisateur.getNom());
-            pstmtUtilisateur.setString(3, utilisateur.getEmail());
-            pstmtUtilisateur.executeUpdate();
-
-            if (utilisateur instanceof Etudiant) {
-                try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
-                    pstmtEtudiant.setObject(1, utilisateur.getId());
-                    pstmtEtudiant.setString(2, ((Etudiant) utilisateur).getProgrammeEtudes());
-                    pstmtEtudiant.executeUpdate();
-                }
-            } else if (utilisateur instanceof Professeur) {
-                try (PreparedStatement pstmtProfesseur = connection.prepareStatement(sqlProfesseur)) {
-                    pstmtProfesseur.setObject(1, utilisateur.getId());
-                    pstmtProfesseur.setString(2, ((Professeur) utilisateur).getDepartement());
-                    pstmtProfesseur.executeUpdate();
-                }
-            }
-            connection.commit();
-            System.out.println("Utilisateur ajouté avec succès.");
-        } catch (SQLException e) {
-            try {
-                if (connection != null) {
-                    connection.rollback();
-                }
-            } catch (SQLException rollbackEx) {
-                rollbackEx.printStackTrace();
-            }
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -126,28 +136,37 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
     @Override
     public void mettreAJourUtilisateur(Utilisateur utilisateur) {
         String sqlUtilisateur = "UPDATE utilisateurs SET nom = ?, email = ? WHERE id = ?";
-        String sqlEtudiant = "UPDATE etudiants SET programmeEtude = ? WHERE id = ?";
+        String sqlEtudiant = "UPDATE etudiants SET programmeEtude = ?, limiteEmprunt = ? WHERE id = ?";
         String sqlProfesseur = "UPDATE professeurs SET departement = ? WHERE id = ?";
 
-        try (PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
-            pstmtUtilisateur.setString(1, utilisateur.getNom());
-            pstmtUtilisateur.setString(2, utilisateur.getEmail());
-            pstmtUtilisateur.setObject(3, utilisateur.getId());
-            pstmtUtilisateur.executeUpdate();
+        try {
+            // Update the utilisateur table
+            try (PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
+                pstmtUtilisateur.setString(1, utilisateur.getNom());
+                pstmtUtilisateur.setString(2, utilisateur.getEmail());
+                pstmtUtilisateur.setObject(3, utilisateur.getId());
+                pstmtUtilisateur.executeUpdate();
+            }
 
+            // Update the child table based on user type
             if (utilisateur instanceof Etudiant) {
+                Etudiant etudiant = (Etudiant) utilisateur;
                 try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
-                    pstmtEtudiant.setString(1, ((Etudiant) utilisateur).getProgrammeEtudes());
-                    pstmtEtudiant.setObject(2, utilisateur.getId());
+                    pstmtEtudiant.setString(1, etudiant.getProgrammeEtudes());
+                    pstmtEtudiant.setInt(2, etudiant.getLimiteEmprunt()); // Update limiteEmprunt
+                    pstmtEtudiant.setObject(3, etudiant.getId());
                     pstmtEtudiant.executeUpdate();
                 }
             } else if (utilisateur instanceof Professeur) {
+                Professeur professeur = (Professeur) utilisateur;
                 try (PreparedStatement pstmtProfesseur = connection.prepareStatement(sqlProfesseur)) {
-                    pstmtProfesseur.setString(1, ((Professeur) utilisateur).getDepartement());
-                    pstmtProfesseur.setObject(2, utilisateur.getId());
+                    pstmtProfesseur.setString(1, professeur.getDepartement());
+                    pstmtProfesseur.setObject(2, professeur.getId());
                     pstmtProfesseur.executeUpdate();
                 }
             }
+
+            // Commit transaction
             connection.commit();
             System.out.println("Utilisateur mis à jour avec succès.");
         } catch (SQLException e) {
@@ -168,10 +187,14 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
         String sqlEtudiant = "DELETE FROM etudiants WHERE id = ?";
         String sqlProfesseur = "DELETE FROM professeurs WHERE id = ?";
 
-        try (PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
-            pstmtUtilisateur.setObject(1, id);
-            pstmtUtilisateur.executeUpdate();
+        try {
+            // Delete from the utilisateurs table
+            try (PreparedStatement pstmtUtilisateur = connection.prepareStatement(sqlUtilisateur)) {
+                pstmtUtilisateur.setObject(1, id);
+                pstmtUtilisateur.executeUpdate();
+            }
 
+            // Delete from the child tables
             try (PreparedStatement pstmtEtudiant = connection.prepareStatement(sqlEtudiant)) {
                 pstmtEtudiant.setObject(1, id);
                 pstmtEtudiant.executeUpdate();
@@ -182,6 +205,7 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
                 pstmtProfesseur.executeUpdate();
             }
 
+            // Commit transaction
             connection.commit();
             System.out.println("Utilisateur supprimé avec succès.");
         } catch (SQLException e) {
@@ -208,13 +232,14 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
             pstmt.setString(1, nom);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                // Debugging output
+                // Debugging output: to verify data is fetched correctly
                 System.out.println("ID: " + rs.getString("id"));
                 System.out.println("Nom: " + rs.getString("nom"));
                 System.out.println("Email: " + rs.getString("email"));
-                System.out.println("Programme Etude: " + rs.getString("programmeEtude"));
-                System.out.println("Departement: " + rs.getString("departement"));
+                System.out.println("Programme Etude: " + rs.getString("programmeEtude")); // May be null
+                System.out.println("Departement: " + rs.getString("departement")); // May be null
 
+                // Create utilisateur object from result set
                 return createUtilisateurFromResultSet(rs);
             }
         } catch (SQLException e) {
@@ -224,7 +249,7 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
     }
 
 
-
+    @Override
     public int countDocumentsEmpruntes(UUID utilisateurId) {
         String sql = "SELECT COUNT(*) AS count FROM documents WHERE empruntePar = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -238,4 +263,5 @@ public class UtilisateurDAO implements UtilisateurDAOInterface {
         }
         return 0;
     }
+
 }

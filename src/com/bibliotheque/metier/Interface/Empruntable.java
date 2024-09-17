@@ -9,7 +9,7 @@ public interface Empruntable {
     boolean estDisponible();
     void emprunter(Utilisateur utilisateur);
     void retourner();
-    UUID getEmpruntePar(); // To return the user who borrowed the document
+    UUID getEmpruntePar();
     LocalDate getEmpruntDate();
 }
 
