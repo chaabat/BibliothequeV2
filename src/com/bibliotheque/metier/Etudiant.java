@@ -8,7 +8,8 @@ public class Etudiant extends Utilisateur {
 
     // Constructor
     public Etudiant(UUID id, String nom, String email, String programmeEtudes) {
-        super(id, nom, email, programmeEtudes);
+        super(id, nom, email);
+        this.programmeEtudes=programmeEtudes;
     }
 
     // Getter and Setter for 'programmeEtudes'

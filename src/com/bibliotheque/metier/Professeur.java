@@ -6,8 +6,8 @@ public class Professeur extends Utilisateur {
     private String departement;
 
     // Constructor
-    public Professeur(UUID id, String nom, String email, String motDePasse) {
-        super(id, nom, email, motDePasse);
+    public Professeur(UUID id, String nom, String email, String departement) {
+        super(id, nom, email);
         this.departement = departement;
     }
 

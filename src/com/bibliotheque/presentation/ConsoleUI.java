@@ -334,7 +334,8 @@ public class ConsoleUI {
                 } while (!InputValidator.isNotEmpty(programmeEtudes));
 
                 Utilisateur etudiant = new Etudiant(id, nom, email, programmeEtudes);
-                bibliotheque.ajouterUtilisateur(etudiant);
+                System.out.println(etudiant);
+              bibliotheque.ajouterUtilisateur(etudiant);
                 System.out.println("Étudiant ajouté avec succès.");
                 break;
 

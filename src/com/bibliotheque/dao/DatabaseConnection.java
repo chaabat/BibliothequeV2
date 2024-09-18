@@ -14,7 +14,7 @@ public class DatabaseConnection {
         if (connection == null || connection.isClosed()) {
             try {
                 Class.forName("org.postgresql.Driver");
-                connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/bibliotheque", "postgres", "chaabat");
+                connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/biba", "postgres", "chaabat");
             } catch (ClassNotFoundException e) {
                 throw new SQLException("Driver PostgreSQL non trouvé.", e);
             }
